@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Assets.Cards;
+using Assets.Scripts;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,19 +20,48 @@ namespace Assets.PlayersClasses
             cardHandler = new BarbarianCards();
             deck = cardHandler.GetStartingDeck();
             hand = new List<CardBase>();
+            resourceName = "Action Points";
+            maxResource = 3;
+            currentResource = 3;
+            regensAtStartOfTurn = true;
+            takenFirstTurn = false;
         }
 
         public override void Init()
         {
+            BaseInit();
             curDeck = new Stack<CardBase>(deck);
             Debug.Log($"curdeck size = {curDeck.Count}");
-            GameObject Player1 = GameObject.Find("Player" + playerNum);
-            Player1.GetComponent<SpriteRenderer>().sprite = GetSprite();
+            GameObject pObj = GameObject.Find("Player" + playerNum);
+            pObj.GetComponent<SpriteRenderer>().sprite = GetSprite();
+        }
+
+        public override void DrawPhase()
+        {
+            if (regensAtStartOfTurn)
+            {
+                setResource(maxResource);
+            }
+            if (takenFirstTurn)
+            {
+                drawCard();
+            }
+            else
+            {
+                for (int i = 0; i < Settings.STARTING_HAND_SIZE; i++)
+                {
+                    drawCard();
+                }
+                takenFirstTurn = true;
+            }
         }
 
         public override void drawCard()
         {
-            hand.Add(curDeck.Pop());
+            if (hand.Count + 1 <= Settings.MAX_HAND_SIZE)
+            {
+                hand.Add(curDeck.Pop());
+            }
         }
 
         public override Sprite GetSprite()

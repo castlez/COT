@@ -141,29 +141,18 @@ public class FightController : MonoBehaviour
 
     bool HandlePlayerTurn()
     {
+        // draw phase
         if (phaseIndex == 0)
         {
-            if (takenFirstTurn.Contains(currentTurn.Item2))
-            {
-                if (currentPlayer.hand.Count + 1 <= Settings.MAX_HAND_SIZE)
-                {
-                    currentPlayer.drawCard();
-                }
-            }
-            else
-            {
-                for (int i = 0; i < Settings.STARTING_HAND_SIZE;i++)
-                {
-                    currentPlayer.drawCard();
-                }
-                takenFirstTurn.Add(currentTurn.Item2);
-            }
+            currentPlayer.DrawPhase();
             
             UpdateHand();
             phaseIndex = 1;
         }
 
-        // Current Player always updates first
+        // play phase
+
+        // Current Player always updates first TODO MULTIPLAYER
         if (Time.time - last_select > moveInterval)
         {
             if (Input.GetAxisRaw("XBoxHoriz1") > 0f || Input.GetAxisRaw("Horizontal") > 0f)
