@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using Assets.Enemies;
+using Assets.PlayersClasses;
 
 namespace Assets.Cards
 {
@@ -19,12 +20,26 @@ namespace Assets.Cards
                 name = "Axe Swing",
                 cost = 1,
                 cardText = "Deal 1d6+1 slashing damage",  // these support \n!!!
-                cardType = CardType.ATTACK,
+                cardType = CardTypes.ATTACK,
+                targetType = TargetTypes.ENEMY,
                 action = delegate (object target)
                 {
                     EnemyBase t = (EnemyBase)target;
                     var damage = CardBase.RollDamage(1, 6, 1);
                     t.TakeDamage(damage);
+                }
+            });
+            cardPool.Add("Drop Shoulder", new CardBase()
+            {
+                name = "Drop Shoulder",
+                cost = 1,
+                cardText = "Gain 5 physical armor",  // these support \n!!!
+                cardType = CardTypes.SKILLS,
+                targetType = TargetTypes.SELF,
+                action = delegate (object target)
+                {
+                    PlayerClassBase t = (PlayerClassBase)target;
+                    t.gainArmour(DamageTypes.PHYSICAL, 5);
                 }
             });
         }
@@ -37,11 +52,11 @@ namespace Assets.Cards
                 cardPool["Axe Throw"],
                 cardPool["Axe Throw"],
                 cardPool["Axe Throw"],
-                cardPool["Axe Throw"],
-                cardPool["Axe Throw"],
-                cardPool["Axe Throw"],
-                cardPool["Axe Throw"],
-                cardPool["Axe Throw"],
+                cardPool["Drop Shoulder"],
+                cardPool["Drop Shoulder"],
+                cardPool["Drop Shoulder"],
+                cardPool["Drop Shoulder"],
+                cardPool["Drop Shoulder"],
             };
         }
     }

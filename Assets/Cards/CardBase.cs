@@ -13,7 +13,8 @@ namespace Assets.Cards
         public string name;
         public string cardText;
         public int cost;
-        public CardType cardType;
+        public CardTypes cardType;
+        public TargetTypes targetType;
 
         // Play the card, each card can target different things, 
         // so object is the safest argument 

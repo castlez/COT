@@ -38,7 +38,7 @@ namespace Assets.Enemies
             }
 
             // todo they should buff eachother if there are more, right now just attack
-            players[playerTarget].TakeDamage(CardBase.RollDamage(1,6,0));
+            players[playerTarget].TakeDamage(CardBase.RollDamage(1,6,0), DamageTypes.PHYSICAL);
 
             return true;
         }

@@ -1,4 +1,5 @@
-﻿using Assets.Enemies;
+﻿using Assets.Cards;
+using Assets.Enemies;
 using Assets.PlayersClasses;
 using Assets.Scripts;
 using System;
@@ -178,7 +179,16 @@ public class FightController : MonoBehaviour
                 {
                     if (lookCard < currentPlayer.hand.Count)
                     {
-                        currentPlayer.playCard(lookCard, enemies[0]);
+                        CardBase toPlay = currentPlayer.hand[lookCard];
+                        if (toPlay.targetType == TargetTypes.ENEMY)
+                        {
+                            // TODO choose an enemy
+                            currentPlayer.playCard(lookCard, enemies[0]);
+                        }
+                        else if (toPlay.targetType == TargetTypes.SELF)
+                        {
+                            currentPlayer.playCard(lookCard, currentPlayer);
+                        }
                         UpdateHand();
                     }
                 }

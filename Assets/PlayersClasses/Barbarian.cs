@@ -30,10 +30,6 @@ namespace Assets.PlayersClasses
         public override void Init()
         {
             BaseInit();
-            curDeck = new Stack<CardBase>(deck);
-            Debug.Log($"curdeck size = {curDeck.Count}");
-            GameObject pObj = GameObject.Find("Player" + playerNum);
-            pObj.GetComponent<SpriteRenderer>().sprite = GetSprite();
         }
 
         public override void DrawPhase()
@@ -78,9 +74,33 @@ namespace Assets.PlayersClasses
             }
         }
 
-        public override void TakeDamage(int amount)
+        public override void TakeDamage(int amount, DamageTypes dType)
         {
-            Hp -= amount;
+            int damageTaken = amount;
+            if (armours.ContainsKey(dType))
+            {
+                int result = armours[dType] - amount;
+                if (result < 1)
+                {
+                    armours.Remove(dType);
+                    GameObject plr = GameObject.Find($"Player{playerNum}");
+                    GameObject physArm = plr.transform.Find("PhysicalArmour").gameObject;
+                    physArm.GetComponent<SpriteRenderer>().enabled = false;
+                    physArm.transform.Find("armAmount").GetComponent<MeshRenderer>().enabled = false;
+                    damageTaken -= Math.Abs(result);
+                }
+                else
+                {
+                    armours[dType] -= amount;
+                    GameObject plr = GameObject.Find($"Player{playerNum}").gameObject;
+                    GameObject physArm = plr.transform.Find("PhysicalArmour").gameObject;
+                    GameObject armAmount = physArm.transform.Find("armAmount").gameObject;
+
+                    armAmount.GetComponent<TextMesh>().text = armours[dType].ToString();
+                    return;
+                }
+            }
+            Hp -= damageTaken;
             GameObject me = GameObject.Find($"Player{playerNum}");
             GameObject cvs = me.transform.Find("Canvas").gameObject;
             GameObject hpobj = cvs.transform.Find("hpbar").gameObject;

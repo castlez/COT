@@ -16,6 +16,7 @@ namespace Assets.PlayersClasses
         public int maxHp;
         public int Hp;
         public bool takenFirstTurn;
+        public Dictionary<DamageTypes, int> armours;
         
         // cards
         public CardHandlerBase cardHandler;
@@ -58,6 +59,21 @@ namespace Assets.PlayersClasses
 
             rCur.GetComponent<TextMesh>().text = currentResource.ToString();
             rMax.GetComponent<TextMesh>().text = maxResource.ToString();
+
+            GameObject physArm = plr.transform.Find("PhysicalArmour").gameObject;
+            physArm.GetComponent<SpriteRenderer>().enabled = false;
+            physArm.transform.Find("armAmount").GetComponent<MeshRenderer>().enabled = false;
+            armours = new Dictionary<DamageTypes, int>();
+
+            // shuffle the deck and make curDeck a stack of shuffled cards
+            List<CardBase> shuffled = new List<CardBase>(deck);
+            System.Random rnd = new System.Random();
+            shuffled = shuffled.Select(x => new { value = x, order = rnd.Next() })
+                               .OrderBy(x => x.order).Select(x => x.value).ToList();
+            curDeck = new Stack<CardBase>(shuffled);
+
+            GameObject pObj = GameObject.Find("Player" + playerNum);
+            pObj.GetComponent<SpriteRenderer>().sprite = GetSprite();
         }
 
         public void spendResource(int amount)
@@ -76,6 +92,29 @@ namespace Assets.PlayersClasses
             rCur.GetComponent<TextMesh>().text = currentResource.ToString();
         }
 
-        public abstract void TakeDamage(int amount);
+        public void gainArmour(DamageTypes kind, int amount)
+        {
+            if (!armours.ContainsKey(kind))
+            {
+                armours.Add(kind, amount);
+            }
+            else
+            {
+                armours[kind] += amount;
+            }
+
+            GameObject plr = GameObject.Find($"Player{playerNum}").gameObject;
+            GameObject physArm = plr.transform.Find("PhysicalArmour").gameObject;
+            GameObject armAmount = physArm.transform.Find("armAmount").gameObject;
+            
+            physArm.GetComponent<SpriteRenderer>().enabled = true;
+            armAmount.GetComponent<MeshRenderer>().enabled = true;
+
+            // TODO add to existing armour
+            armAmount.GetComponent<TextMesh>().text = armours[kind].ToString();
+        }
+
+        public abstract void TakeDamage(int amount, DamageTypes dType);
+
     }
 }
