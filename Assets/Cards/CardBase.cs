@@ -21,21 +21,17 @@ namespace Assets.Cards
         public delegate void playCard(object target);
 
         public playCard action;
-        public static void DoDamageToEnemy(EnemyBase enemy, int amount)
-        {
-            enemy.TakeDamage(amount);
-        }
 
-        public static int RollDamage(int numDice, int diceType, int modifier)
-        {
-            System.Random rnd = new System.Random();
-            int total = 0;
-            for (int i = 0; i < numDice; i++)
-            {
-                total += rnd.Next(1, diceType + 1);
-            }
-            total += modifier;
-            return total;
-        }
+        //public static int RollDamage(int numDice, int diceType, int modifier)
+        //{
+        //    System.Random rnd = new System.Random();
+        //    int total = 0;
+        //    for (int i = 0; i < numDice; i++)
+        //    {
+        //        total += rnd.Next(1, diceType + 1);
+        //    }
+        //    total += modifier;
+        //    return total;
+        //}
     }
 }

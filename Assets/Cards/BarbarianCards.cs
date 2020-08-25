@@ -19,14 +19,13 @@ namespace Assets.Cards
             {
                 name = "Axe Swing",
                 cost = 1,
-                cardText = "Deal 1d6+1 slashing damage",  // these support \n!!!
+                cardText = "Deal 6 slashing damage",  // these support \n!!!
                 cardType = CardTypes.ATTACK,
                 targetType = TargetTypes.ENEMY,
                 action = delegate (object target)
                 {
                     EnemyBase t = (EnemyBase)target;
-                    var damage = CardBase.RollDamage(1, 6, 1);
-                    t.TakeDamage(damage);
+                    t.TakeDamage(6);
                 }
             });
             cardPool.Add("Drop Shoulder", new CardBase()

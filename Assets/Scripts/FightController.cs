@@ -170,6 +170,7 @@ public class FightController : MonoBehaviour
         {
             if (Input.GetAxisRaw("PassTurn") > 0f)
             {
+                currentPlayer.EndPhase();
                 return true;
             }
 
