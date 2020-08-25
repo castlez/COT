@@ -32,7 +32,7 @@ namespace Assets.Cards
             {
                 name = "Drop Shoulder",
                 cost = 1,
-                cardText = "Gain 5 physical armor",  // these support \n!!!
+                cardText = "Gain 5 physical armor",
                 cardType = CardTypes.SKILLS,
                 targetType = TargetTypes.SELF,
                 action = delegate (object target)

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Assets.Cards;
-using Assets.Scripts;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -38,13 +36,53 @@ namespace Assets.PlayersClasses
         // general
         public abstract void Init();
         public abstract Sprite GetSprite();
+
+        public void SetTurnIndicator(bool myTurn)
+        {
+            Debug.Log($"player {playerNum} setting turn ind to {myTurn}");
+            GameObject me = GameObject.Find($"Player{playerNum}");
+            GameObject cvs = me.transform.Find("Canvas").gameObject;
+            GameObject turn = cvs.transform.Find("TurnInd").gameObject;
+            turn.GetComponent<SpriteRenderer>().enabled = myTurn;
+        }
+
+        public void StartTurn()
+        {
+            GameObject ui = GameObject.Find("UI").gameObject;
+            GameObject rMax = ui.transform.Find("rMax").gameObject;
+            SetTurnIndicator(true);
+
+            // populate resources
+            rMax.GetComponent<TextMesh>().text = maxResource.ToString();
+            if (regensAtStartOfTurn)
+            {
+                setResource(maxResource);
+            }
+
+            GameObject physArm = ui.transform.Find("PhysicalArmour").gameObject;
+            GameObject armAmount = physArm.transform.Find("armAmount").gameObject;
+
+            if (armours.ContainsKey(DamageTypes.PHYSICAL))
+            {
+                physArm.GetComponent<SpriteRenderer>().enabled = true;
+                armAmount.GetComponent<MeshRenderer>().enabled = true;
+
+                armAmount.GetComponent<TextMesh>().text = armours[DamageTypes.PHYSICAL].ToString();
+            }
+            else
+            {
+                physArm.GetComponent<SpriteRenderer>().enabled = false;
+                armAmount.GetComponent<MeshRenderer>().enabled = false;
+            }
+        }
+
         public void DrawPhase()
         {
             if (regensAtStartOfTurn)
             {
                 setResource(maxResource);
             }
-            for (int i = 0; i < Settings.STARTING_HAND_SIZE; i++)
+            for (int i = 0; i < Meta.STARTING_HAND_SIZE; i++)
             {
                 drawCard();
             }
@@ -52,17 +90,21 @@ namespace Assets.PlayersClasses
 
         public void EndPhase()
         {
+            // dump hand in grave, empty hand
             foreach(CardBase h in hand)
             {
                 grave.Add(h);
             }
             hand = new List<CardBase>();
+
+            // turn off your turn indicator
+            SetTurnIndicator(false);
         }
 
         // card functions / actions
         public void drawCard()
         {
-            if (hand.Count + 1 <= Settings.MAX_HAND_SIZE)
+            if (hand.Count + 1 <= Meta.MAX_HAND_SIZE)
             {
                 if (curDeck.Count == 0)
                 {
@@ -90,16 +132,6 @@ namespace Assets.PlayersClasses
 
         public void BaseInit()
         {
-            GameObject plr = GameObject.Find($"Player{playerNum}").gameObject;
-            GameObject rCur = plr.transform.Find("rCur").gameObject;
-            GameObject rMax = plr.transform.Find("rMax").gameObject;
-
-            rCur.GetComponent<TextMesh>().text = currentResource.ToString();
-            rMax.GetComponent<TextMesh>().text = maxResource.ToString();
-
-            GameObject physArm = plr.transform.Find("PhysicalArmour").gameObject;
-            physArm.GetComponent<SpriteRenderer>().enabled = false;
-            physArm.transform.Find("armAmount").GetComponent<MeshRenderer>().enabled = false;
             armours = new Dictionary<DamageTypes, int>();
 
             // shuffle the deck and make curDeck a stack of shuffled cards
@@ -110,14 +142,17 @@ namespace Assets.PlayersClasses
             curDeck = new Stack<CardBase>(shuffled);
             grave = new List<CardBase>();
 
+            Debug.Log($"Trying to get sprite for player {playerNum}");
             GameObject pObj = GameObject.Find("Player" + playerNum);
             pObj.GetComponent<SpriteRenderer>().sprite = GetSprite();
+            Debug.Log($"Got sprite for player {playerNum}");
+
         }
 
         public void spendResource(int amount)
         {
             currentResource -= amount;
-            GameObject plr = GameObject.Find($"Player{playerNum}").gameObject;
+            GameObject plr = GameObject.Find($"UI").gameObject;
             GameObject rCur = plr.transform.Find("rCur").gameObject;
             rCur.GetComponent<TextMesh>().text = currentResource.ToString();
         }
@@ -125,7 +160,7 @@ namespace Assets.PlayersClasses
         public void setResource(int value)
         {
             currentResource = value;
-            GameObject plr = GameObject.Find($"Player{playerNum}").gameObject;
+            GameObject plr = GameObject.Find($"UI").gameObject;
             GameObject rCur = plr.transform.Find("rCur").gameObject;
             rCur.GetComponent<TextMesh>().text = currentResource.ToString();
         }
@@ -141,8 +176,8 @@ namespace Assets.PlayersClasses
                 armours[kind] += amount;
             }
 
-            GameObject plr = GameObject.Find($"Player{playerNum}").gameObject;
-            GameObject physArm = plr.transform.Find("PhysicalArmour").gameObject;
+            GameObject ui = GameObject.Find($"UI").gameObject;
+            GameObject physArm = ui.transform.Find("PhysicalArmour").gameObject;
             GameObject armAmount = physArm.transform.Find("armAmount").gameObject;
             
             physArm.GetComponent<SpriteRenderer>().enabled = true;
@@ -156,12 +191,15 @@ namespace Assets.PlayersClasses
             int damageTaken = amount;
             if (armours.ContainsKey(dType))
             {
+                // if we have armour, reduce it by the amount of damage taken, 
+                // if damage still remains, lose health
+                // TODO move this to SetArmour function or some shit
                 int result = armours[dType] - amount;
                 if (result < 1)
                 {
                     armours.Remove(dType);
-                    GameObject plr = GameObject.Find($"Player{playerNum}");
-                    GameObject physArm = plr.transform.Find("PhysicalArmour").gameObject;
+                    GameObject ui = GameObject.Find($"UI");
+                    GameObject physArm = ui.transform.Find("PhysicalArmour").gameObject;
                     physArm.GetComponent<SpriteRenderer>().enabled = false;
                     physArm.transform.Find("armAmount").GetComponent<MeshRenderer>().enabled = false;
                     damageTaken -= Math.Abs(result);
@@ -169,8 +207,8 @@ namespace Assets.PlayersClasses
                 else
                 {
                     armours[dType] -= amount;
-                    GameObject plr = GameObject.Find($"Player{playerNum}").gameObject;
-                    GameObject physArm = plr.transform.Find("PhysicalArmour").gameObject;
+                    GameObject ui = GameObject.Find($"UI").gameObject;
+                    GameObject physArm = ui.transform.Find("PhysicalArmour").gameObject;
                     GameObject armAmount = physArm.transform.Find("armAmount").gameObject;
 
                     armAmount.GetComponent<TextMesh>().text = armours[dType].ToString();

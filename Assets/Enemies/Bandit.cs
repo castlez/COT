@@ -12,10 +12,9 @@ namespace Assets.Enemies
 {
     class Bandit : EnemyBase
     {
-        string Name = "Bandit";
-
         public Bandit(string eNum)
         {
+            Name = "Bandit";
             enemyNum = eNum;
             GameObject Player1 = GameObject.Find("Enemy" + enemyNum);
             Player1.GetComponent<SpriteRenderer>().sprite = GetSprite();

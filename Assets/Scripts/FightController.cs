@@ -1,10 +1,10 @@
 ﻿using Assets.Cards;
 using Assets.Enemies;
 using Assets.PlayersClasses;
-using Assets.Scripts;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Dynamic;
 using UnityEngine;
 
 public class FightController : MonoBehaviour
@@ -48,32 +48,38 @@ public class FightController : MonoBehaviour
     public List<int> takenFirstTurn;
 
     // turn phases
-    public List<string> phase = new List<string>() {"draw", "play", "end" };
+    public List<string> phase = new List<string>() {"start", "draw", "play", "end" };
     public int phaseIndex;
 
     // Start is called before the first frame update
     void Start()
     {
         // init players
+        // TODO get players from player select scene, for now hard coded to 2 players and 2 enemies
         players = new List<PlayerClassBase>();
-        PlayerClassBase p1 = new Barbarian("1");
-        players.Add(p1);
+        for (int i = 1; i < Meta.CURRENTPLAYERS+1; i++)
+        {
+            PlayerClassBase player = new Barbarian($"{i}");  // todo this loop stupid, there are other classes (soon)
+            player.Init();
+            players.Add(player);
+        }
+
+        SetupUi();
 
         currentPlayer = players[0];
-        currentPlayer.Init();
-        
-        // init enemies
-        enemies = new List<EnemyBase>();
-        EnemyBase e1 = new Bandit("1");
-        enemies.Add(e1);
-        enemies[0].Init();
-
-        takenFirstTurn = new List<int>();
-
         // set turn order
         // TODO for now just all players then all enemies
         currentTurn = new Tuple<string, int>("players", 0); // access with currentTurn.Item1 and currentTurn.Item2
         phaseIndex = 0;
+
+        // init enemies TODO make dynamic
+        enemies = new List<EnemyBase>();
+        EnemyBase e1 = new Bandit("1");
+        enemies.Add(e1);
+        enemies[0].Init();
+        EnemyBase e2 = new Bandit("2");
+        enemies.Add(e2);
+        enemies[1].Init();
 
         lookCard = 0;
         deselectedY = hand1.transform.position.y;
@@ -81,12 +87,12 @@ public class FightController : MonoBehaviour
         last_select = Time.time;
         last_play = Time.time;
 
-        for (int i = 0; i < Settings.MAX_HAND_SIZE; i++)
+        for (int i = 0; i < Meta.MAX_HAND_SIZE; i++)
         {
             // find the card, set it inactive
             GameObject hcard = GameObject.Find($"Hand{i + 1}");
             GameObject hcd = hcard.transform.Find("CardDesc").gameObject;
-            hcd.GetComponent<MeshRenderer>().enabled = false;  //TODO this needs to be current player not first player
+            hcd.GetComponent<MeshRenderer>().enabled = false; 
 
             GameObject hcn = hcard.transform.Find("CardName").gameObject;
             hcn.GetComponent<MeshRenderer>().enabled = false;
@@ -94,6 +100,15 @@ public class FightController : MonoBehaviour
             GameObject hcc = hcard.transform.Find("CardCost").gameObject;
             hcc.GetComponent<MeshRenderer>().enabled = false;
             hcard.GetComponent<Renderer>().enabled = false;
+        }
+    }
+
+    void SetupUi()
+    {
+        // Turn off all turn indicators
+        for (int i = 0; i < players.Count;i++)
+        {
+            players[i].SetTurnIndicator(false);
         }
     }
 
@@ -105,7 +120,7 @@ public class FightController : MonoBehaviour
             var passTurn = HandlePlayerTurn();
             if (passTurn)
             {
-                if (currentTurn.Item2 >= players.Count - 1)
+                if (currentTurn.Item2 + 1 >= players.Count)
                 {
                     currentTurn = new Tuple<string, int>("enemies", 0);
                 }
@@ -122,8 +137,9 @@ public class FightController : MonoBehaviour
             var passTurn = HandleEnemyTurn();
             if (passTurn)
             {
-                if (currentTurn.Item2 >= enemies.Count - 1)
+                if (currentTurn.Item2 + 1 >= enemies.Count)
                 {
+                    currentPlayer = players[0];
                     currentTurn = new Tuple<string, int>("players", 0);
                     phaseIndex = 0;  // set to draw phase of next player turn
                 }
@@ -142,13 +158,17 @@ public class FightController : MonoBehaviour
 
     bool HandlePlayerTurn()
     {
-        // draw phase
+        // check beginning of turn
         if (phaseIndex == 0)
         {
-            currentPlayer.DrawPhase();
-            
-            UpdateHand();
+            currentPlayer.StartTurn();
             phaseIndex = 1;
+        }
+        if (phaseIndex == 1)
+        {
+            currentPlayer.DrawPhase();
+            UpdateHand();
+            phaseIndex = 2;
         }
 
         // play phase
@@ -156,11 +176,11 @@ public class FightController : MonoBehaviour
         // Current Player always updates first TODO MULTIPLAYER
         if (Time.time - last_select > moveInterval)
         {
-            if (Input.GetAxisRaw("XBoxHoriz1") > 0f || Input.GetAxisRaw("Horizontal") > 0f)
+            if (Input.GetAxisRaw($"XBoxHoriz{currentPlayer.playerNum}") > 0f)
             {
                 updateCardSelect(lookCard, lookCard + 1);
             }
-            else if (Input.GetAxisRaw("XBoxHoriz1") < 0f || Input.GetAxisRaw("Horizontal") < 0f)
+            else if (Input.GetAxisRaw($"XBoxHoriz{currentPlayer.playerNum}") < 0f)
             {
                 updateCardSelect(lookCard, lookCard - 1);
             }
@@ -168,13 +188,13 @@ public class FightController : MonoBehaviour
 
         if (Time.time - last_play > playInterval)
         {
-            if (Input.GetAxisRaw("PassTurn") > 0f)
+            if (Input.GetAxisRaw($"XBoxPassTurn{currentPlayer.playerNum}") > 0f)
             {
                 currentPlayer.EndPhase();
                 return true;
             }
 
-            if (Input.GetAxisRaw("Action") > 0f)
+            if (Input.GetAxisRaw($"XBoxAction{currentPlayer.playerNum}") > 0f)
             {
                 if (currentPlayer.hand.Count > 0)
                 {
@@ -219,7 +239,7 @@ public class FightController : MonoBehaviour
 
     void UpdateHand()
     {
-        for (int i = 0; i < Settings.MAX_HAND_SIZE; i++)  
+        for (int i = 0; i < Meta.MAX_HAND_SIZE; i++)  
         {
             // find the card, set it inactive
             GameObject hcard = GameObject.Find($"Hand{i + 1}");

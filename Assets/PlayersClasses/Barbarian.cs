@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Assets.Cards;
-using Assets.Scripts;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,6 +13,8 @@ namespace Assets.PlayersClasses
     {
         public Barbarian(string pNum)
         {
+            Debug.Log($"Trying init for barb player {pNum}");
+
             playerNum = pNum;
             maxHp = 40;
             Hp = maxHp;
@@ -26,6 +27,8 @@ namespace Assets.PlayersClasses
             currentResource = 3;
             regensAtStartOfTurn = true;
             takenFirstTurn = false;
+            Debug.Log($"initd for barb player {pNum}");
+
         }
 
         public override void Init()
