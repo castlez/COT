@@ -42,7 +42,7 @@ namespace Assets.Enemies
             return true;
         }
 
-        public override void TakeDamage(int amount)
+        public override void TakeDamage(int amount, DamageTypes dType)
         {
             Hp -= amount;
             GameObject me = GameObject.Find($"Enemy{enemyNum}");

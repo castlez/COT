@@ -1,4 +1,5 @@
-﻿using Assets.PlayersClasses;
+﻿using Assets.Cards;
+using Assets.PlayersClasses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,10 +19,18 @@ namespace Assets.Enemies
 
         public abstract void Init();
 
-        public abstract void TakeDamage(int amount);
+        public abstract void TakeDamage(int amount, DamageTypes dType);
 
         public abstract Sprite GetSprite();
 
         public abstract bool TakeTurn(List<PlayerClassBase> players, List<EnemyBase> enemies);
+
+        public void SetTargetted(bool targetted)
+        {
+            GameObject me = GameObject.Find($"Enemy{enemyNum}");
+            GameObject cvs = me.transform.Find("Canvas").gameObject;
+            GameObject targInd = cvs.transform.Find("TargetInd").gameObject;
+            targInd.GetComponent<SpriteRenderer>().enabled = targetted;
+        }
     }
 }

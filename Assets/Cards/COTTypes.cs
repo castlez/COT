@@ -35,6 +35,7 @@ namespace Assets.Cards
     {
         PLAYER,
         SELF,
-        ENEMY
+        ENEMY,
+        ENEMYMULTIPLE
     }
 }

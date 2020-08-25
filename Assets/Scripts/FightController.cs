@@ -9,6 +9,10 @@ using UnityEngine;
 
 public class FightController : MonoBehaviour
 {
+    // Local Constants
+    public const string PLAYERS = "players";
+    public const string ENEMIES = "enemies";
+
     // positions for selected cards of current player
     private float deselectedY;
     private float selectedY;
@@ -51,6 +55,11 @@ public class FightController : MonoBehaviour
     public List<string> phase = new List<string>() {"start", "draw", "play", "end" };
     public int phaseIndex;
 
+    // targetting
+    public bool enterTargetMode;
+    public bool targetMode;
+    public Tuple<string, int> currentTarget;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -64,12 +73,12 @@ public class FightController : MonoBehaviour
             players.Add(player);
         }
 
-        SetupUi();
-
-        currentPlayer = players[0];
         // set turn order
         // TODO for now just all players then all enemies
-        currentTurn = new Tuple<string, int>("players", 0); // access with currentTurn.Item1 and currentTurn.Item2
+        currentPlayer = players[0];
+        currentTurn = new Tuple<string, int>(PLAYERS, 0); // access with currentTurn.Item1 and currentTurn.Item2
+        Debug.Log($"Current player is {currentTurn.Item2}");
+
         phaseIndex = 0;
 
         // init enemies TODO make dynamic
@@ -80,6 +89,8 @@ public class FightController : MonoBehaviour
         EnemyBase e2 = new Bandit("2");
         enemies.Add(e2);
         enemies[1].Init();
+
+        SetupUi();
 
         lookCard = 0;
         deselectedY = hand1.transform.position.y;
@@ -105,29 +116,38 @@ public class FightController : MonoBehaviour
 
     void SetupUi()
     {
-        // Turn off all turn indicators
-        for (int i = 0; i < players.Count;i++)
+        // Turn off all indicators
+        for (int i = 0; i < players.Count; i++)
         {
             players[i].SetTurnIndicator(false);
+            players[i].SetTargetted(false);
         }
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            //enemies[i].SetTurnIndicator(false);
+            enemies[i].SetTargetted(false);
+        }
+
+        targetMode = false;
+        enterTargetMode = false;
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (currentTurn.Item1 == "players")
+        if (currentTurn.Item1 == PLAYERS)
         {
             var passTurn = HandlePlayerTurn();
             if (passTurn)
             {
                 if (currentTurn.Item2 + 1 >= players.Count)
                 {
-                    currentTurn = new Tuple<string, int>("enemies", 0);
+                    currentTurn = new Tuple<string, int>(ENEMIES, 0);
                 }
                 else
                 {
                     currentPlayer = players[currentTurn.Item2 + 1];
-                    currentTurn = new Tuple<string, int>("players", currentTurn.Item2 + 1);
+                    currentTurn = new Tuple<string, int>(PLAYERS, currentTurn.Item2 + 1);
                     phaseIndex = 0;  // set to draw phase of next turn
                 }
             }
@@ -140,12 +160,12 @@ public class FightController : MonoBehaviour
                 if (currentTurn.Item2 + 1 >= enemies.Count)
                 {
                     currentPlayer = players[0];
-                    currentTurn = new Tuple<string, int>("players", 0);
+                    currentTurn = new Tuple<string, int>(PLAYERS, 0);
                     phaseIndex = 0;  // set to draw phase of next player turn
                 }
                 else
                 {
-                    currentTurn = new Tuple<string, int>("enemies", currentTurn.Item2 + 1);
+                    currentTurn = new Tuple<string, int>(ENEMIES, currentTurn.Item2 + 1);
                 }
             }
         }
@@ -176,41 +196,126 @@ public class FightController : MonoBehaviour
         // Current Player always updates first TODO MULTIPLAYER
         if (Time.time - last_select > moveInterval)
         {
-            if (Input.GetAxisRaw($"XBoxHoriz{currentPlayer.playerNum}") > 0f)
+            if (Input.GetAxisRaw($"XBoxHoriz{currentPlayer.playerNum}") > 0f || 
+                Input.GetAxisRaw("Horizontal") > 0f)
             {
-                updateCardSelect(lookCard, lookCard + 1);
+                if (targetMode)
+                {
+                    string currentTargetType = currentTarget.Item1;
+                    int currentTargetIndex = currentTarget.Item2;
+                    if (currentTargetType == ENEMIES)
+                    {
+                        if (currentTargetIndex + 1 > enemies.Count - 1)
+                        {
+                            // Wrap around
+                            enemies[currentTargetIndex].SetTargetted(false);
+                            enemies[0].SetTargetted(true);
+                            currentTarget = new Tuple<string, int>(ENEMIES, 0);
+                        }
+                        else
+                        {
+                            enemies[currentTargetIndex].SetTargetted(false);
+                            enemies[currentTargetIndex + 1].SetTargetted(true);
+                            currentTarget = new Tuple<string, int>(ENEMIES, currentTargetIndex + 1);
+                        }
+                        Debug.Log($"current target: {currentTarget.Item1}, {currentTarget.Item2}");
+
+                    }
+                }
+                else
+                {
+                    updateCardSelect(lookCard, lookCard + 1);
+                }
             }
-            else if (Input.GetAxisRaw($"XBoxHoriz{currentPlayer.playerNum}") < 0f)
+            else if (Input.GetAxisRaw($"XBoxHoriz{currentPlayer.playerNum}") < 0f ||
+                     Input.GetAxisRaw("Horizontal") < 0f)
             {
-                updateCardSelect(lookCard, lookCard - 1);
+                 if (targetMode)
+                 {
+                    string currentTargetType = currentTarget.Item1;
+                    int currentTargetIndex = currentTarget.Item2;
+                    if (currentTargetType == ENEMIES)
+                    {
+                        if (currentTargetIndex - 1 < 0)
+                        {
+                            // Wrap around
+                            enemies[currentTargetIndex].SetTargetted(false);
+                            enemies[players.Count-1].SetTargetted(true);
+                            currentTarget = new Tuple<string, int>(ENEMIES, players.Count-1);
+                            Debug.Log("move left");
+                        }
+                        else
+                        {
+                            enemies[currentTargetIndex].SetTargetted(false);
+                            enemies[currentTargetIndex-1].SetTargetted(true);
+                            currentTarget = new Tuple<string, int>(ENEMIES, currentTargetIndex-1);
+                            Debug.Log("move left");
+                        }
+                        Debug.Log($"current target: {currentTarget.Item1}, {currentTarget.Item2}");
+
+                    }
+                }
+                 else
+                 {
+                    updateCardSelect(lookCard, lookCard - 1);
+                 }
+
             }
         }
 
         if (Time.time - last_play > playInterval)
         {
-            if (Input.GetAxisRaw($"XBoxPassTurn{currentPlayer.playerNum}") > 0f)
+            if (Input.GetAxisRaw($"XBoxPassTurn{currentPlayer.playerNum}") > 0f ||
+                Input.GetAxisRaw("KeyPass") == 1f)
             {
                 currentPlayer.EndPhase();
                 return true;
             }
 
-            if (Input.GetAxisRaw($"XBoxAction{currentPlayer.playerNum}") > 0f)
+            if (Input.GetAxisRaw($"XBoxAction{currentPlayer.playerNum}") > 0f ||
+                Input.GetAxisRaw("KeyAction") > 0f)
             {
                 if (currentPlayer.hand.Count > 0)
                 {
                     if (lookCard < currentPlayer.hand.Count)
                     {
-                        CardBase toPlay = currentPlayer.hand[lookCard];
-                        if (toPlay.targetType == TargetTypes.ENEMY)
+                        if (Time.time - last_play > 5f && targetMode)  // TODO CONSTANT for 5f
                         {
-                            // TODO choose an enemy
-                            currentPlayer.playCard(lookCard, enemies[0]);
+                            CardBase toPlay = currentPlayer.hand[lookCard];
+                            if (toPlay.targetType == TargetTypes.ENEMY)
+                            {
+                                int ti = currentTarget.Item2;
+                                currentPlayer.playCard(lookCard, enemies[ti]);
+                                Debug.Log("Getting there1");
+                            }
+                            if (toPlay.targetType == TargetTypes.PLAYER)
+                            {
+                                int ti = currentTarget.Item2;
+                                currentPlayer.playCard(lookCard, players[ti]);
+                            }
+                            else if (toPlay.targetType == TargetTypes.SELF)
+                            {
+                                currentPlayer.playCard(lookCard, currentPlayer);
+                            }
+                            UpdateHand();
+                            targetMode = false;
                         }
-                        else if (toPlay.targetType == TargetTypes.SELF)
+                        else
                         {
-                            currentPlayer.playCard(lookCard, currentPlayer);
+                            TargetTypes targetType = currentPlayer.hand[lookCard].targetType;
+                            if (targetType == TargetTypes.ENEMY)
+                            {
+                                currentTarget = new Tuple<string, int>(ENEMIES, 0);
+                                enemies[0].SetTargetted(true);
+                                Debug.Log("Getting there2");
+                            }
+                            else if (targetType == TargetTypes.PLAYER)
+                            {
+                                currentTarget = new Tuple<string, int>(PLAYERS, 0);
+                                players[0].SetTargetted(true);
+                            }
+                            targetMode = true;
                         }
-                        UpdateHand();
                     }
                 }
             }
@@ -264,7 +369,7 @@ public class FightController : MonoBehaviour
 
                 GameObject hcd = hcard.transform.Find("CardDesc").gameObject;
                 hcd.GetComponent<MeshRenderer>().enabled = true;
-                hcd.GetComponent<TextMesh>().text = players[playerIndex].hand[i].cardText;  //TODO this needs to be current player not first player
+                hcd.GetComponent<TextMesh>().text = players[playerIndex].hand[i].cardText(players[playerIndex]);  //TODO this needs to be current player not first player
 
                 GameObject hcn = hcard.transform.Find("CardName").gameObject;
                 hcn.GetComponent<MeshRenderer>().enabled = true;

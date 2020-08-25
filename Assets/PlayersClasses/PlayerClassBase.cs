@@ -16,6 +16,7 @@ namespace Assets.PlayersClasses
         public int Hp;
         public bool takenFirstTurn;
         public Dictionary<DamageTypes, int> armours;
+        public int damageModifier;
         
         // cards
         public CardHandlerBase cardHandler;
@@ -101,6 +102,14 @@ namespace Assets.PlayersClasses
             SetTurnIndicator(false);
         }
 
+        public void SetTargetted(bool targetted)
+        {
+            GameObject me = GameObject.Find($"Player{playerNum}");
+            GameObject cvs = me.transform.Find("Canvas").gameObject;
+            GameObject targInd = cvs.transform.Find("TargetInd").gameObject;
+            targInd.GetComponent<SpriteRenderer>().enabled = targetted;
+        }
+
         // card functions / actions
         public void drawCard()
         {
@@ -124,7 +133,7 @@ namespace Assets.PlayersClasses
             if (toPlay.cost <= currentResource)
             {
                 spendResource(toPlay.cost);
-                toPlay.action(target);
+                toPlay.action(target, this);
                 hand.RemoveAt(cardIndex);
                 grave.Add(toPlay);
             }
@@ -142,11 +151,12 @@ namespace Assets.PlayersClasses
             curDeck = new Stack<CardBase>(shuffled);
             grave = new List<CardBase>();
 
-            Debug.Log($"Trying to get sprite for player {playerNum}");
+            // Get Sprite
             GameObject pObj = GameObject.Find("Player" + playerNum);
             pObj.GetComponent<SpriteRenderer>().sprite = GetSprite();
-            Debug.Log($"Got sprite for player {playerNum}");
 
+            // set starting stats
+            damageModifier = 0;
         }
 
         public void spendResource(int amount)
