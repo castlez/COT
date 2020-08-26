@@ -38,4 +38,12 @@ namespace Assets.Cards
         ENEMY,
         ENEMYMULTIPLE
     }
+
+    public enum StatusEffectTimes
+    {
+        STARTTURN,
+        ENDTURN,
+        ONATTACK,
+        ONTAKEDAMAGE
+    }
 }

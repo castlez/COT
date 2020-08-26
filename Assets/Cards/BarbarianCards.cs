@@ -59,6 +59,23 @@ namespace Assets.Cards
             });
 
             // Uncommon
+            cardPool.Add("Enrage", new CardBase()
+            {
+                name = "Enrage",
+                cost = 1,
+                cardText = delegate (PlayerClassBase caster)
+                {
+                    return "Become Enraged\n(Increase physical damage by 50% and\nphysical damage taken by 25%)";
+                },
+                cardType = CardTypes.AURA,
+                targetType = TargetTypes.SELF,
+                action = delegate (object target, PlayerClassBase caster)
+                {
+                    PlayerClassBase t = (PlayerClassBase)target;
+                    t.gainArmour(DamageTypes.PHYSICAL, 5);
+                }
+            });
+
             cardPool.Add("Wild Swing", new CardBase()
             {
                 name = "Wild Swing",
@@ -66,8 +83,8 @@ namespace Assets.Cards
                 cardText = delegate (PlayerClassBase caster)
                 {
                     int damMod = caster.damageModifier + this.GetCard("Wild Swing").baseDamage;
-                    return $"Deals {damMod} slashing damage. Take a quarter as\n" +
-                           " much physical damage rounded down.";
+                    return $"Deals {damMod} slashing damage. \nTake a quarter as" +
+                           " much physical \ndamage rounded down.";
                 },
                 cardType = CardTypes.ATTACK,
                 targetType = TargetTypes.ENEMY,
@@ -99,9 +116,9 @@ namespace Assets.Cards
                 cardPool["Axe Swing"],
                 cardPool["Axe Swing"],
                 cardPool["Axe Swing"],
-                cardPool["Wild Swing"],
-                cardPool["Wild Swing"],
-                cardPool["Wild Swing"],
+                //cardPool["Wild Swing"],
+                //cardPool["Wild Swing"],
+                //cardPool["Wild Swing"],
                 cardPool["Drop Shoulder"],
                 cardPool["Drop Shoulder"],
             };

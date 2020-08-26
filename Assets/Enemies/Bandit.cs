@@ -21,7 +21,8 @@ namespace Assets.Enemies
         }
         public override void Init()
         {
-            maxHp = 15;
+            //maxHp = 30;
+            maxHp = 1;
             Hp = maxHp;
         }
 

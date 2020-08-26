@@ -126,7 +126,7 @@ namespace Assets.PlayersClasses
                 hand.Add(curDeck.Pop());
             }
         }
-        public void playCard(int cardIndex, object target)
+        public bool playCard(int cardIndex, object target)
         {
             // to play a card, spend the resource, call the action, remove from hand, add to grave
             CardBase toPlay = hand[cardIndex];
@@ -136,7 +136,9 @@ namespace Assets.PlayersClasses
                 toPlay.action(target, this);
                 hand.RemoveAt(cardIndex);
                 grave.Add(toPlay);
+                return true;
             }
+            return false;
         }
 
         public void BaseInit()
