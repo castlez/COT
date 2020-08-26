@@ -13,8 +13,6 @@ namespace Assets.PlayersClasses
     {
         public Barbarian(string pNum)
         {
-            Debug.Log($"Trying init for barb player {pNum}");
-
             playerNum = pNum;
             maxHp = 40;
             Hp = maxHp;
@@ -27,8 +25,6 @@ namespace Assets.PlayersClasses
             currentResource = 3;
             regensAtStartOfTurn = true;
             takenFirstTurn = false;
-            Debug.Log($"initd for barb player {pNum}");
-
         }
 
         public override void Init()

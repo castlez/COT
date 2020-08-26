@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Assets.Cards;
+using Assets.Enemies;
 
 namespace Assets.PlayersClasses.Statuses
 {
@@ -13,12 +14,12 @@ namespace Assets.PlayersClasses.Statuses
         public string name;
 
         // when the effect takes place
-        public StatusEffectTimes activatePhase;
+        public List<StatusEffectTimes> effectTimes;
 
         // cant be static in this version of C# but its static so implement it as static?
         public string description;
 
         // Apply the affect by checking phase
-        public abstract bool apply();
+        public abstract int apply(object target, StatusEffectTimes sType);
     }
 }

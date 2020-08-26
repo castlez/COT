@@ -5,6 +5,7 @@ using UnityEngine;
 using Assets.Enemies;
 using Assets.PlayersClasses;
 using System.Linq;
+using Assets.PlayersClasses.Statuses;
 
 namespace Assets.Cards
 {
@@ -24,7 +25,7 @@ namespace Assets.Cards
                 cost = 1,
                 cardText = delegate (PlayerClassBase caster)
                 {
-                    int damMod = caster.damageModifier + this.GetCard("Axe Swing").baseDamage;
+                    int damMod = caster.getModdedDamage(this.GetCard("Axe Swing").baseDamage, DamageTypes.PHYSICAL);
                     return $"Deals {damMod} slashing damage";
                 },
                 cardType = CardTypes.ATTACK,
@@ -35,7 +36,7 @@ namespace Assets.Cards
                     EnemyBase target = (EnemyBase)targetObj;
                     Barbarian me = (Barbarian)caster;
 
-                    int damMod = me.damageModifier + this.GetCard("Axe Swing").baseDamage;
+                    int damMod = me.getModdedDamage(this.GetCard("Axe Swing").baseDamage, DamageTypes.PHYSICAL);
                     int meDmg = (int)Mathf.Floor(damMod / 4);
                     target.TakeDamage(damMod, DamageTypes.PHYSICAL);
                     Debug.Log($"axe swing hit for {damMod}");
@@ -72,7 +73,7 @@ namespace Assets.Cards
                 action = delegate (object target, PlayerClassBase caster)
                 {
                     PlayerClassBase t = (PlayerClassBase)target;
-                    t.gainArmour(DamageTypes.PHYSICAL, 5);
+                    t.statuses.Add(new Enrage());
                 }
             });
 
@@ -82,7 +83,7 @@ namespace Assets.Cards
                 cost = 2,
                 cardText = delegate (PlayerClassBase caster)
                 {
-                    int damMod = caster.damageModifier + this.GetCard("Wild Swing").baseDamage;
+                    int damMod = caster.getModdedDamage(this.GetCard("Wild Swing").baseDamage, DamageTypes.PHYSICAL);
                     return $"Deals {damMod} slashing damage. \nTake a quarter as" +
                            " much physical \ndamage rounded down.";
                 },
@@ -94,7 +95,7 @@ namespace Assets.Cards
                     EnemyBase target = (EnemyBase)targetObj;
                     Barbarian me = (Barbarian)caster;
 
-                    int damMod = me.damageModifier + this.GetCard("Wild Swing").baseDamage;
+                    int damMod = me.getModdedDamage(this.GetCard("Wild Swing").baseDamage, DamageTypes.PHYSICAL);
                     int meDmg = (int)Mathf.Floor(damMod / 4);
                     target.TakeDamage(damMod, DamageTypes.PHYSICAL);
                     me.TakeDamage(meDmg, DamageTypes.PHYSICAL);
@@ -113,9 +114,9 @@ namespace Assets.Cards
             return new List<CardBase>() {
                 cardPool["Axe Swing"],
                 cardPool["Axe Swing"],
-                cardPool["Axe Swing"],
-                cardPool["Axe Swing"],
-                cardPool["Axe Swing"],
+                cardPool["Enrage"],
+                cardPool["Enrage"],
+                cardPool["Enrage"],
                 //cardPool["Wild Swing"],
                 //cardPool["Wild Swing"],
                 //cardPool["Wild Swing"],

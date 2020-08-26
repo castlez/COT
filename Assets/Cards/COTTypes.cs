@@ -44,6 +44,7 @@ namespace Assets.Cards
         STARTTURN,
         ENDTURN,
         ONATTACK,
+        ONDAMAGE,
         ONTAKEDAMAGE
     }
 }

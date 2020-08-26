@@ -27,6 +27,7 @@ namespace Assets.Cards
 
         public cardDel cardText;
 
+
         public CardBase()
         {
             //cardText = cardText.Replace("{}", baseDamage.ToString());

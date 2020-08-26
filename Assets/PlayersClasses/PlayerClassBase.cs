@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Assets.Cards;
+using Assets.PlayersClasses.Statuses;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,8 +17,8 @@ namespace Assets.PlayersClasses
         public int Hp;
         public bool takenFirstTurn;
         public Dictionary<DamageTypes, int> armours;
-        public int damageModifier;
-        
+        public List<StatusBase> statuses;
+
         // cards
         public CardHandlerBase cardHandler;
         public List<CardBase> deck;
@@ -37,6 +38,23 @@ namespace Assets.PlayersClasses
         // general
         public abstract void Init();
         public abstract Sprite GetSprite();
+
+        public int getModdedDamage(int baseAmount, DamageTypes dType)
+        {
+            int damMod = baseAmount;
+            // check if any status increase damage done
+            // TODO apply damage type
+            foreach (StatusBase stat in statuses)
+            {
+                if (stat.effectTimes.Contains(StatusEffectTimes.ONDAMAGE))
+                {
+                    Debug.Log($"Woulda done {damMod}...");
+                    damMod = stat.apply(damMod, StatusEffectTimes.ONDAMAGE);
+                    Debug.Log($"but instead doing {damMod} due to {stat.GetType().Name}");
+                }
+            }
+            return damMod;
+        }
 
         public void SetTurnIndicator(bool myTurn)
         {
@@ -156,9 +174,7 @@ namespace Assets.PlayersClasses
             // Get Sprite
             GameObject pObj = GameObject.Find("Player" + playerNum);
             pObj.GetComponent<SpriteRenderer>().sprite = GetSprite();
-
-            // set starting stats
-            damageModifier = 0;
+            statuses = new List<StatusBase>();
         }
 
         public void spendResource(int amount)
@@ -201,6 +217,17 @@ namespace Assets.PlayersClasses
         public void TakeDamage(int amount, DamageTypes dType)
         {
             int damageTaken = amount;
+
+            // check if any status increase damage taken
+            foreach (StatusBase stat in statuses)
+            {
+                if (stat.effectTimes.Contains(StatusEffectTimes.ONTAKEDAMAGE))
+                {
+                    Debug.Log($"Woulda taken {damageTaken}...");
+                    damageTaken = stat.apply(damageTaken, StatusEffectTimes.ONTAKEDAMAGE);
+                    Debug.Log($"but instead taking {damageTaken} due to {stat.GetType().Name}");
+                }
+            }
             if (armours.ContainsKey(dType))
             {
                 // if we have armour, reduce it by the amount of damage taken, 
@@ -243,6 +270,5 @@ namespace Assets.PlayersClasses
                 cvs.GetComponent<Canvas>().enabled = false;
             }
         }
-
     }
 }
