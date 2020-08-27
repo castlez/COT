@@ -74,6 +74,7 @@ namespace Assets.Cards
                 {
                     PlayerClassBase t = (PlayerClassBase)target;
                     t.statuses.Add(new Enrage());
+                    t.UpdateStatuses();
                 }
             });
 

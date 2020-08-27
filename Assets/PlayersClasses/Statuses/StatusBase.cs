@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Assets.Cards;
 using Assets.Enemies;
+using UnityEngine;
 
 namespace Assets.PlayersClasses.Statuses
 {
@@ -21,5 +22,7 @@ namespace Assets.PlayersClasses.Statuses
 
         // Apply the affect by checking phase
         public abstract int apply(object target, StatusEffectTimes sType);
+
+        public abstract Sprite GetSprite();
     }
 }

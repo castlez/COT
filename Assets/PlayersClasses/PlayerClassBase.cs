@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace Assets.PlayersClasses
 {
-    public abstract class PlayerClassBase
+    public abstract class PlayerClassBase : MonoBehaviour
     {
         // status
         public int maxHp;
@@ -18,6 +18,7 @@ namespace Assets.PlayersClasses
         public bool takenFirstTurn;
         public Dictionary<DamageTypes, int> armours;
         public List<StatusBase> statuses;
+        public GameObject statusPrefab;
 
         // cards
         public CardHandlerBase cardHandler;
@@ -65,6 +66,25 @@ namespace Assets.PlayersClasses
             turn.GetComponent<SpriteRenderer>().enabled = myTurn;
         }
 
+        public void UpdateStatuses()
+        {
+            if (statuses.Count == 0)
+            {
+                // need to remove them too
+            }
+            else
+            {
+                GameObject me = GameObject.Find($"Player{playerNum}");
+                GameObject cvs = me.transform.Find("Canvas").gameObject;
+                GameObject sts = cvs.transform.Find("Statuses").gameObject;
+                Vector3 currentPos = sts.transform.position;
+                for (int i = 0; i < statuses.Count;i++)
+                {
+                    GameObject newStat = Instantiate(statusPrefab, currentPos, Quaternion.identity);
+                    newStat.GetComponent<SpriteRenderer>().sprite = statuses[i].GetSprite();
+                }
+            }
+        }
         public void StartTurn()
         {
             GameObject ui = GameObject.Find("UI").gameObject;

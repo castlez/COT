@@ -30,8 +30,8 @@ public class FightController : MonoBehaviour
     public GameObject hand4;
     public GameObject hand5;
 
-    // cards in the players hand
-    private List<GameObject> hand;
+    // status prefab to pass to players
+    public GameObject statusPrefab;
 
     // which card the current player has selected
     public int lookCard;
@@ -75,7 +75,7 @@ public class FightController : MonoBehaviour
         players = new List<PlayerClassBase>();
         for (int i = 1; i < Meta.CURRENTPLAYERS+1; i++)
         {
-            PlayerClassBase player = new Barbarian($"{i}");  // todo this loop stupid, there are other classes (soon)
+            PlayerClassBase player = new Barbarian($"{i}", statusPrefab);  // todo this loop stupid, there are other classes (soon)
             player.Init();
             players.Add(player);
         }

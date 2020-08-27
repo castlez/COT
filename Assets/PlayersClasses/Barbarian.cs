@@ -11,7 +11,7 @@ namespace Assets.PlayersClasses
 {
     public class Barbarian : PlayerClassBase
     {
-        public Barbarian(string pNum)
+        public Barbarian(string pNum, GameObject stPrefab)
         {
             playerNum = pNum;
             maxHp = 40;
@@ -25,6 +25,8 @@ namespace Assets.PlayersClasses
             currentResource = 3;
             regensAtStartOfTurn = true;
             takenFirstTurn = false;
+
+            statusPrefab = stPrefab;
         }
 
         public override void Init()
