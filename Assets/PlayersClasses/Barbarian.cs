@@ -26,7 +26,8 @@ namespace Assets.PlayersClasses
             regensAtStartOfTurn = true;
             takenFirstTurn = false;
 
-            statusPrefab = stPrefab;
+            statusPrefabTemplate = stPrefab;
+            statusPrefabs = new List<GameObject>();
         }
 
         public override void Init()

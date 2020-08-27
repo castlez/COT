@@ -174,6 +174,10 @@ public class FightController : MonoBehaviour
                 {
                     keyCheck = Input.GetAxisRaw("Horizontal");
                 }
+                else if (keyName == "XBoxBack")
+                {
+                    keyCheck = Input.GetAxisRaw("KeyBack");
+                }
                 else
                 {
                     Debug.LogError($"CheckKey recieved unknown key '{keyName}' with keyboard enabled!");
@@ -355,7 +359,12 @@ public class FightController : MonoBehaviour
         {
             if (CheckKey("XBoxAction", currentPlayer.playerNum, greaterThan))
             {
-                TargetTypes targetType = currentPlayer.hand[lookCard].targetType;
+                CardBase toPlay = currentPlayer.hand[lookCard];
+                if(!currentPlayer.canPlayCardAtIndex(lookCard))
+                {
+                    return;
+                }
+                TargetTypes targetType = toPlay.targetType;
                 if (targetType == TargetTypes.ENEMY)
                 {
                     currentTarget = new Tuple<string, int>(ENEMIES, 0);
@@ -451,10 +460,6 @@ public class FightController : MonoBehaviour
                 {
                     if (currentTargetIndex + 1 > enemies.Count - 1)
                     {
-                        // Wrap around
-                        //enemies[currentTargetIndex].SetTargetted(false);
-                        //enemies[0].SetTargetted(true);
-                        //currentTarget = new Tuple<string, int>(ENEMIES, 0);
                         last_select = Time.time;
                     }
                     else
@@ -490,6 +495,12 @@ public class FightController : MonoBehaviour
                     }
                     Debug.Log($"current target: {currentTarget.Item1}, {currentTarget.Item2}");
                 }
+            }
+            if (CheckKey("XBoxBack", currentPlayer.playerNum, greaterThan))
+            {
+                int currentTargetIndex = currentTarget.Item2;
+                enemies[currentTargetIndex].SetTargetted(false);
+                targetMode = false;
             }
         }
     }

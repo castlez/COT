@@ -17,6 +17,7 @@ namespace Assets.Cards
         public BarbarianCards()
         {
             cardPool = new Dictionary<string, CardBase>();
+            string cardName = "";
 
             // Common
             cardPool.Add("Axe Swing", new CardBase()
@@ -73,8 +74,7 @@ namespace Assets.Cards
                 action = delegate (object target, PlayerClassBase caster)
                 {
                     PlayerClassBase t = (PlayerClassBase)target;
-                    t.statuses.Add(new Enrage());
-                    t.UpdateStatuses();
+                    t.AddStatus(new Enrage());
                 }
             });
 
@@ -103,6 +103,34 @@ namespace Assets.Cards
                     Debug.Log($"wild swing hits for {damMod} and caster takes {meDmg}");
                 }
             });
+
+            cardName = "All In";
+            cardPool.Add(cardName, new CardBase()
+            {
+                name = cardName,
+                cost = 2,
+                cardText = delegate (PlayerClassBase caster)
+                {
+                    int damMod = caster.getModdedDamage(this.GetCard(cardName).baseDamage, DamageTypes.PHYSICAL);
+                    return $"Deals {damMod} crushing damage.";
+                },
+                cardType = CardTypes.ATTACK,
+                targetType = TargetTypes.ENEMY,
+                baseDamage = 16,
+                action = delegate (object targetObj, PlayerClassBase caster)
+                {
+                    EnemyBase target = (EnemyBase)targetObj;
+                    Barbarian me = (Barbarian)caster;
+
+                    int damMod = me.getModdedDamage(this.GetCard(cardName).baseDamage, DamageTypes.PHYSICAL);
+                    target.TakeDamage(damMod, DamageTypes.PHYSICAL);
+                    Debug.Log($"wild swing hits for {damMod}");
+
+                    caster.RemoveStatus(delegate (StatusBase stat) {
+                        return stat.name == "Enrage";
+                    });
+                }
+            });
         }
 
         public CardBase GetCard(string name)
@@ -114,15 +142,15 @@ namespace Assets.Cards
         {
             return new List<CardBase>() {
                 cardPool["Axe Swing"],
-                cardPool["Axe Swing"],
+                //cardPool["Axe Swing"],
+                //cardPool["Axe Swing"],
+                //cardPool["Axe Swing"],
+                //cardPool["Drop Shoulder"],
+                //cardPool["Drop Shoulder"],
+                //cardPool["Drop Shoulder"],
+                //cardPool["Drop Shoulder"],
                 cardPool["Enrage"],
-                cardPool["Enrage"],
-                cardPool["Enrage"],
-                //cardPool["Wild Swing"],
-                //cardPool["Wild Swing"],
-                //cardPool["Wild Swing"],
-                cardPool["Drop Shoulder"],
-                cardPool["Drop Shoulder"],
+                cardPool["All In"]
             };
         }
     }

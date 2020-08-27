@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
 using Assets.Cards;
@@ -18,7 +19,10 @@ namespace Assets.PlayersClasses
         public bool takenFirstTurn;
         public Dictionary<DamageTypes, int> armours;
         public List<StatusBase> statuses;
-        public GameObject statusPrefab;
+        public GameObject statusPrefabTemplate;
+        public List<GameObject> statusPrefabs;
+        public float currentStatusXPos;
+        public const float STATUS_SPACING = 0.4f;
 
         // cards
         public CardHandlerBase cardHandler;
@@ -74,14 +78,42 @@ namespace Assets.PlayersClasses
             }
             else
             {
-                GameObject me = GameObject.Find($"Player{playerNum}");
-                GameObject cvs = me.transform.Find("Canvas").gameObject;
-                GameObject sts = cvs.transform.Find("Statuses").gameObject;
-                Vector3 currentPos = sts.transform.position;
-                for (int i = 0; i < statuses.Count;i++)
+                // i guess also handle like... statuses that expired?
+            }
+        }
+
+        public void AddStatus(StatusBase st)
+        {
+            statuses.Add(st);
+
+            GameObject me = GameObject.Find($"Player{playerNum}");
+            GameObject cvs = me.transform.Find("Canvas").gameObject;
+            GameObject sts = cvs.transform.Find("Statuses").gameObject;
+            Vector3 statusPos = sts.transform.position;
+            statusPos.x = statusPos.x + STATUS_SPACING * (statuses.Count - 1f);
+
+            GameObject newStat = Instantiate(statusPrefabTemplate, statusPos, Quaternion.identity);
+            newStat.GetComponent<SpriteRenderer>().sprite = statuses[statuses.Count - 1].GetSprite();
+
+            statusPrefabs.Add(newStat);
+        }
+
+        public void RemoveStatus(Func<StatusBase, bool> check)
+        {
+            if (statuses.Count == 0)
+            {
+                return;
+            }
+            for (int i = 0; i < statuses.Count; i++)
+            {
+                if (check(statuses[i]))
                 {
-                    GameObject newStat = Instantiate(statusPrefab, currentPos, Quaternion.identity);
-                    newStat.GetComponent<SpriteRenderer>().sprite = statuses[i].GetSprite();
+                    statuses.RemoveAt(i);
+                    GameObject sp = statusPrefabs[i];
+                    statusPrefabs.RemoveAt(i);
+                    Destroy(sp);
+
+                    return;
                 }
             }
         }
@@ -168,13 +200,22 @@ namespace Assets.PlayersClasses
         {
             // to play a card, spend the resource, call the action, remove from hand, add to grave
             CardBase toPlay = hand[cardIndex];
-            if (toPlay.cost <= currentResource)
+            if (canPlayCardAtIndex(cardIndex))
             {
                 spendResource(toPlay.cost);
                 toPlay.action(target, this);
                 hand.RemoveAt(cardIndex);
                 grave.Add(toPlay);
                 return true;
+            }
+            return false;
+        }
+
+        public bool canPlayCardAtIndex(int index)
+        {
+            if (index < hand.Count)
+            {
+                return hand[index].cost <= currentResource;
             }
             return false;
         }

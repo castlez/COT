@@ -14,6 +14,7 @@ namespace Assets.PlayersClasses.Statuses
     {
         public Enrage()
         {
+            name = "Enrage";
             effectTimes = new List<StatusEffectTimes>() { StatusEffectTimes.ONDAMAGE, StatusEffectTimes.ONTAKEDAMAGE };
         }
         public override int apply(object target, StatusEffectTimes sType)
