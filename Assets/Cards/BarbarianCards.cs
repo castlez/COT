@@ -142,13 +142,13 @@ namespace Assets.Cards
         {
             return new List<CardBase>() {
                 cardPool["Axe Swing"],
-                //cardPool["Axe Swing"],
-                //cardPool["Axe Swing"],
-                //cardPool["Axe Swing"],
-                //cardPool["Drop Shoulder"],
-                //cardPool["Drop Shoulder"],
-                //cardPool["Drop Shoulder"],
-                //cardPool["Drop Shoulder"],
+                cardPool["Axe Swing"],
+                cardPool["Axe Swing"],
+                cardPool["Axe Swing"],
+                cardPool["Drop Shoulder"],
+                cardPool["Drop Shoulder"],
+                cardPool["Drop Shoulder"],
+                cardPool["Drop Shoulder"],
                 cardPool["Enrage"],
                 cardPool["All In"]
             };
