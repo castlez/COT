@@ -17,7 +17,7 @@ public class FightController : MonoBehaviour
 
     // DEBUGGING(?)
     public const bool USE_KEYBOARD = true;  // use keyboard to control player 1
-    public const bool KEYBOARD_ALL = true;  // use keyboard to contrall all players
+    public bool singlePlayer;  // use keyboard to control all players, basically single player
 
     // positions for selected cards of current player
     private float deselectedY;
@@ -70,6 +70,9 @@ public class FightController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // check single player
+        singlePlayer = checkControllers();
+
         // init players
         // TODO get players from player select scene, for now hard coded to 2 players and 2 enemies
         players = new List<PlayerClassBase>();
@@ -121,6 +124,27 @@ public class FightController : MonoBehaviour
         }
     }
 
+    bool checkControllers()
+    {
+        //Get Joystick Names
+        string[] temp = Input.GetJoystickNames();
+
+        //Check whether array contains anything
+        if (temp.Length > 0)
+        {
+            //Iterate over every element
+            for (int i = 0; i < temp.Length; ++i)
+            {
+                //Check if the string is empty or not
+                if (!string.IsNullOrEmpty(temp[i]))
+                {
+                    return false;  // this just says if any controller is connected!!
+                }
+            }
+        }
+        return true;
+    }
+
     void SetupUi()
     {
         // Turn off all indicators
@@ -159,7 +183,7 @@ public class FightController : MonoBehaviour
         float keyCheck;
         if (USE_KEYBOARD)
         {
-            if (pNum == "1" || KEYBOARD_ALL)
+            if (pNum == "1" || singlePlayer)
             {
                 // if the keyboard is in use, shift controllers down
                 if (keyName == "XBoxPassTurn")
