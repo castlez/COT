@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace Assets.PlayersClasses
 {
-    public abstract class PlayerClassBase : MonoBehaviour
+    public abstract class PlayerClassBase
     {
         // status
         public int maxHp;
@@ -41,7 +41,7 @@ namespace Assets.PlayersClasses
         public string playerNum;
 
         // general
-        public abstract void Init();
+        public abstract void Init(GameObject stprefobj);
         public abstract Sprite GetSprite();
 
         public int getModdedDamage(int baseAmount, DamageTypes dType)
@@ -92,10 +92,10 @@ namespace Assets.PlayersClasses
             Vector3 statusPos = sts.transform.position;
             statusPos.x = statusPos.x + STATUS_SPACING * (statuses.Count - 1f);
 
-            GameObject newStat = Instantiate(statusPrefabTemplate, statusPos, Quaternion.identity);
-            newStat.GetComponent<SpriteRenderer>().sprite = statuses[statuses.Count - 1].GetSprite();
+            //GameObject newStat = Instantiate(statusPrefabTemplate, statusPos, Quaternion.identity);
+            //newStat.GetComponent<SpriteRenderer>().sprite = statuses[statuses.Count - 1].GetSprite();
 
-            statusPrefabs.Add(newStat);
+            //statusPrefabs.Add(newStat);
         }
 
         public void RemoveStatus(Func<StatusBase, bool> check)
@@ -111,7 +111,7 @@ namespace Assets.PlayersClasses
                     statuses.RemoveAt(i);
                     GameObject sp = statusPrefabs[i];
                     statusPrefabs.RemoveAt(i);
-                    Destroy(sp);
+                    //Destroy(sp);
 
                     return;
                 }
@@ -187,10 +187,7 @@ namespace Assets.PlayersClasses
             {
                 if (curDeck.Count == 0)
                 {
-                    List<CardBase> shuffled = new List<CardBase>(grave);
-                    System.Random rnd = new System.Random();
-                    shuffled = shuffled.Select(x => new { value = x, order = rnd.Next() })
-                                       .OrderBy(x => x.order).Select(x => x.value).ToList();
+                    List<CardBase> shuffled = deck.OrderBy(a => Guid.NewGuid()).ToList();
                     curDeck = new Stack<CardBase>(shuffled);
                 }
                 hand.Add(curDeck.Pop());
@@ -220,15 +217,16 @@ namespace Assets.PlayersClasses
             return false;
         }
 
-        public void BaseInit()
+        public void BaseInit(GameObject stPrefTemp)
         {
+            statusPrefabTemplate = stPrefTemp;
             armours = new Dictionary<DamageTypes, int>();
 
             // shuffle the deck and make curDeck a stack of shuffled cards
-            List<CardBase> shuffled = new List<CardBase>(deck);
-            System.Random rnd = new System.Random();
-            shuffled = shuffled.Select(x => new { value = x, order = rnd.Next() })
-                               .OrderBy(x => x.order).Select(x => x.value).ToList();
+            List<CardBase> shuffled = deck.OrderBy(a => Guid.NewGuid()).ToList();
+            //System.Random rnd = new System.Random();
+            //shuffled = shuffled.Select(x => new { value = x, order = rnd.Next() })
+            //                   .OrderBy(x => x.order).Select(x => x.value).ToList();
             curDeck = new Stack<CardBase>(shuffled);
             grave = new List<CardBase>();
 

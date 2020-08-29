@@ -1385,7 +1385,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5.02
+  orthographic size: 4.5755496
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1674,6 +1674,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 712699d89137bbe4eb128ace489f6166, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  singlePlayer: 0
   hand1: {fileID: 1719971304}
   hand2: {fileID: 1499442165}
   hand3: {fileID: 1685512975}
@@ -1687,8 +1688,6 @@ MonoBehaviour:
   playInterval: 0.76
   targetInterval: 0.38
   targetActionInterval: 0.61
-  currentPlayer: {fileID: 0}
-  players: []
   takenFirstTurn: 
   phase:
   - draw
@@ -3111,7 +3110,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1508010408}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8, y: -0.89, z: -1.8279504}
+  m_LocalPosition: {x: -9.02, y: -0.85, z: -1.8279504}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1849394407}

@@ -67,20 +67,24 @@ public class FightController : MonoBehaviour
     public bool targetMode;
     public Tuple<string, int> currentTarget;
 
+    // global game data
+    //public static GameData gameData;
+
     // Start is called before the first frame update
     void Start()
     {
         // check single player
         singlePlayer = checkControllers();
 
+        // get global game data object
+        //gameData = gameObject.AddComponent<GameData>();
+
         // init players
         // TODO get players from player select scene, for now hard coded to 2 players and 2 enemies
-        players = new List<PlayerClassBase>();
-        for (int i = 1; i < Meta.CURRENTPLAYERS+1; i++)
+        players = GameData.currentPlayers;
+        for (int i = 0; i < players.Count; i++)
         {
-            PlayerClassBase player = new Barbarian($"{i}", statusPrefab);  // todo this loop stupid, there are other classes (soon)
-            player.Init();
-            players.Add(player);
+            players[i].Init(statusPrefab);
         }
 
         // set turn order
