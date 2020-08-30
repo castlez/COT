@@ -10,7 +10,7 @@ namespace Assets.Controls
     public static class Cin
     {
         // DEBUGGING(?)
-        public static bool USE_KEYBOARD = true;  // use keyboard to control player 1
+        public static bool USE_KEYBOARD = false;  // use keyboard to control player 1
         public static bool singlePlayer;  // use keyboard to control all players, basically single player
 
         public delegate bool COperator(float a, float b);
@@ -60,7 +60,7 @@ namespace Assets.Controls
                 else
                 {
                     int num = int.Parse(pNum) - 1;
-                    keyCheck = Input.GetAxisRaw($"{keyName}{num}");
+                    keyCheck = Input.GetAxisRaw($"{keyName}{num}");  // invert y axis on stick for some reason?
                 }
             }
             else  // shows as unreachable if USE_KEYBOARD is true
@@ -72,6 +72,28 @@ namespace Assets.Controls
                 return true;
             }
             return false;
+        }
+
+        public static List<string> checkControllers()
+        {
+            //Get Joystick Names
+            string[] temp = Input.GetJoystickNames();
+            List<string> connected = new List<string>();
+
+            //Check whether array contains anything
+            if (temp.Length > 0)
+            {
+                //Iterate over every element
+                for (int i = 0; i < temp.Length; ++i)
+                {
+                    //Check if the string is empty or not
+                    if (!string.IsNullOrEmpty(temp[i]))
+                    {
+                        connected.Add(temp[i]);
+                    }
+                }
+            }
+            return connected;
         }
     }
 }

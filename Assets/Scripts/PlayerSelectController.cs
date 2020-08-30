@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Assets.Cards;
 
-public class PlayerTurn
+public class PlayerController
 {
     public int choice;  // which class they are looking at
     public MODE position;  // position in class view, either start deck or select rn
@@ -14,6 +14,7 @@ public class PlayerTurn
     public int dLookPos;  // which card in the deck preview they are looking at
     public int playerIndex;  // index in the player lists
     public string ps;  // player string, used to find game objects
+    public bool ready;  // whether the player has selected their character
 }
 
 public enum MODE
@@ -28,27 +29,43 @@ public class PlayerSelectController : MonoBehaviour
     //public GameData gameData;
     public List<PlayerClassBase> playableClasses;
 
+    public static int maxPlayers = 4;
+
     // Turn data
-    public List<PlayerTurn> plrs;
+    public List<PlayerController> plrs;
 
     // movement
     public float moveInterval;
     private float last_select;
 
     // DEBUGGING(?)
-    public const bool USE_KEYBOARD = true;  // use keyboard to control player 1
     public bool singlePlayer;  // use keyboard to control all players, basically single player
+
 
     private void Awake()
     {
         // TODO check if any active controllers
-        singlePlayer = true;
-        
+        // TODO make it so one person can have multiple heroes
+        List<string> controllers = Cin.checkControllers();
+        Cin.singlePlayer = false;  // TODO this means single player always uses keyboard
 
         playableClasses = new List<PlayerClassBase>() {
             new Barbarian("0"),
             new ShadowTinker("0")
         };
+    }
+
+    PlayerClassBase GetClass(int pi, string name)
+    {
+        switch(name)
+        {
+            case "Barbarian":
+                return new Barbarian($"{pi+1}");
+            case "ShadowTinker":
+                return new ShadowTinker($"{pi+1}");
+            default:
+                return null;
+        }
     }
 
     void Start()
@@ -57,12 +74,6 @@ public class PlayerSelectController : MonoBehaviour
         // for all players
         Init();
         
-
-        //GameData.currentPlayers = new List<PlayerClassBase>() {
-        //    new Barbarian("1"),
-        //    new Barbarian("2")
-        //};
-
         // stand in so indexing is easier, if less than 4 players
         // are present MAKE SURE TO PRUNE THIS TODO TODO TODO
         GameData.currentPlayers = new List<PlayerClassBase>()
@@ -72,7 +83,6 @@ public class PlayerSelectController : MonoBehaviour
             new Barbarian("1"),
             new Barbarian("1")
         };
-        SetPlayerClassChoice(0, 0, MODE.READYUP);  // set player 1 to barbarian selecting "Select"
     }
 
     // Update is called once per frame
@@ -81,52 +91,120 @@ public class PlayerSelectController : MonoBehaviour
         // TODO determine if a player has joined
         // or if single player has added a player for themselves
 
-
-        // TODO handle players selecting classes
-        int i = 0;  // make this a loop for all players
-        string pi = $"{i + 1}";
-        if (plrs[i].lookingAtDeck)
+        if (plrs.Count == 0)
         {
-            HandleDeckView(i);
+            CheckForNewPlayers();
         }
         else
         {
-            HandlePlayerClassSelect(i);
-            HandleSelectAction(i);
+            CheckForNewPlayers();
+            for (int i = 0; i < plrs.Count; i++)
+            {
+                if (plrs[i].lookingAtDeck)
+                {
+                    HandleDeckView(i);
+                }
+                else
+                {
+                    HandlePlayerClassSelect(i);
+                    HandleSelectAction(i);
+                }
+            }
         }
-        
+
 
         // check if everyone is ready and move to game if so
 
-        //if (Input.GetAxisRaw("XBoxAction1") > 0f || Input.GetAxisRaw("KeyAction") > 0f)
-        //{
-        //    SceneManager.LoadScene(1);
-        //}
+        if (CheckAllPlayersReady())
+        {
+            // cement the changes and head to the next scene
+            GameData.currentPlayers = new List<PlayerClassBase>();
+            for (int i=0;i<plrs.Count;i++)
+            {
+                string cname = playableClasses[plrs[i].choice].GetType().Name;
+                PlayerClassBase np = GetClass(i, cname);
+                GameData.currentPlayers.Add(np);
+            }
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        }
     }
 
     private void Init()
     {
-        plrs = new List<PlayerTurn>();
-        for (int i = 0; i < 4; i++)
+        plrs = new List<PlayerController>();
+        
+        // hide all deck views and selectors at first
+        for (int i = 0; i < maxPlayers;i++) 
         {
-            plrs.Add(new PlayerTurn() {
-                choice=0,
-                position=0,  
-                lookingAtDeck = false,
-                dLookPos=0, 
-                playerIndex=i,
-                ps=$"{i+1}"
-            });
+            string num = $"{i+1}";
+            GameObject player = GameObject.Find($"PSelect{num}").gameObject;
+            GameObject deckView = player.transform.Find("DeckView").gameObject;
+            deckView.SetActive(false);
+            player.SetActive(false);
         }
+    }
 
-        // hide all deck views
-        // TODO do the rest of them?
-        int ip = 0;
+    bool CheckAllPlayersReady()
+    {
+        if (plrs.Count == 0)
+        {
+            return false;
+        }
+        for (int i = 0; i < plrs.Count; i++)
+        {
+            if (!plrs[i].ready)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 
-        GameObject player = GameObject.Find($"PSelect{plrs[ip].ps}").gameObject;
-        GameObject deckView = player.transform.Find("DeckView").gameObject;
-        deckView.SetActive(false);
+    void CheckForNewPlayers()
+    {
+        if (Time.time - last_select > moveInterval)
+        {
+            string num;
+            for (int i = 0; i < maxPlayers; i++)
+            {
+                if (i >= plrs.Count)
+                {
+                    num = $"{i + 1}";
+                    if (Cin.CheckKey("XBoxAction", num, Cin.greaterThan))
+                    {
+                        plrs.Add(new PlayerController()
+                        {
+                            choice = 0,
+                            position = 0,
+                            lookingAtDeck = false,
+                            dLookPos = 0,
+                            playerIndex = i,
+                            ps = $"{i + 1}"
+                        });
 
+                        // show the selector
+                        GameObject cvs = GameObject.Find("Canvas").gameObject;
+                        GameObject player = cvs.transform.Find($"PSelect{num}").gameObject;
+                        player.SetActive(true);
+                        SetPlayerClassChoice(i, 0, MODE.READYUP);
+
+                        last_select = Time.time;
+                    }
+                }
+            }
+        }
+    }
+
+    bool PlayerIsActive(int playerNum)
+    {
+        for (int i = 0; i< plrs.Count;i++)
+        {
+            if (plrs[i].playerIndex == playerNum)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     void SetPlayerClassChoice(int playerIndex, int classIndex, MODE interactIndex)
@@ -172,53 +250,88 @@ public class PlayerSelectController : MonoBehaviour
 
     void HandlePlayerClassSelect(int playerIndex)
     {
-        string pi = $"{playerIndex + 1}";
-        // TODO do for all plays in a loop
-        if (Cin.CheckKey("XBoxHoriz", $"{playerIndex+1}", Cin.greaterThan))
+        if (!plrs[playerIndex].ready)
         {
-            if (plrs[playerIndex].choice + 1 < playableClasses.Count)
+            string pi = $"{playerIndex + 1}";
+            if (Cin.CheckKey("XBoxHoriz", $"{playerIndex+1}", Cin.greaterThan))
             {
-                SetPlayerClassChoice(playerIndex, plrs[playerIndex].choice + 1, plrs[playerIndex].position);
+                if (plrs[playerIndex].choice + 1 < playableClasses.Count)
+                {
+                    SetPlayerClassChoice(playerIndex, plrs[playerIndex].choice + 1, plrs[playerIndex].position);
+                }
             }
-        }
-        if (Cin.CheckKey("XBoxHoriz", pi, Cin.lessThan))
-        {
-            if (plrs[playerIndex].choice - 1 >= 0)
+            if (Cin.CheckKey("XBoxHoriz", pi, Cin.lessThan))
             {
-                SetPlayerClassChoice(playerIndex, plrs[playerIndex].choice - 1, plrs[playerIndex].position);
+                if (plrs[playerIndex].choice - 1 >= 0)
+                {
+                    SetPlayerClassChoice(playerIndex, plrs[playerIndex].choice - 1, plrs[playerIndex].position);
+                }
             }
-        }
-        if (Cin.CheckKey("XBoxVert", pi, Cin.greaterThan))
-        {
-            if (plrs[playerIndex].position == MODE.READYUP)
+            if (Cin.CheckKey("XBoxVert", pi, Cin.greaterThan))
             {
-                SetPlayerClassChoice(playerIndex, plrs[playerIndex].choice, MODE.LOOKATDECK);
+                if (plrs[playerIndex].position == MODE.READYUP)
+                {
+                    SetPlayerClassChoice(playerIndex, plrs[playerIndex].choice, MODE.LOOKATDECK);
+                }
             }
-        }
-        if (Cin.CheckKey("XBoxVert", pi, Cin.lessThan))
-        {
-            if (plrs[playerIndex].position == MODE.LOOKATDECK)
+            if (Cin.CheckKey("XBoxVert", pi, Cin.lessThan))
             {
-                SetPlayerClassChoice(playerIndex, plrs[playerIndex].choice, MODE.READYUP);
+                if (plrs[playerIndex].position == MODE.LOOKATDECK)
+                {
+                    SetPlayerClassChoice(playerIndex, plrs[playerIndex].choice, MODE.READYUP);
+                }
             }
         }
     }
 
     void HandleSelectAction(int playerIndex)
     {
-        PlayerTurn p = plrs[playerIndex];
-        if (Cin.CheckKey("XBoxAction", p.ps, Cin.greaterThan))
+        if (!PlayerIsActive(playerIndex))
         {
-            if (p.position == MODE.LOOKATDECK)
+            return;
+        }
+        if (Time.time - last_select > moveInterval)
+        {
+            PlayerController p = plrs[playerIndex];
+            if (!p.ready)
             {
-                p.lookingAtDeck = true;
-                GameObject player = GameObject.Find($"PSelect{p.ps}").gameObject;
-                GameObject deckView = player.transform.Find("DeckView").gameObject;
-                deckView.SetActive(true);
-                SetDeckViewChoice(playerIndex, plrs[playerIndex].dLookPos,
-                    playableClasses[plrs[playerIndex].choice].GetUniqueCardsInDeck());
+                if (Cin.CheckKey("XBoxAction", p.ps, Cin.greaterThan))
+                {
+
+                    GameObject player = GameObject.Find($"PSelect{p.ps}").gameObject;
+                    if (p.position == MODE.LOOKATDECK)
+                    {
+                        p.lookingAtDeck = true;
+                        GameObject deckView = player.transform.Find("DeckView").gameObject;
+                        deckView.SetActive(true);
+                        SetDeckViewChoice(playerIndex, plrs[playerIndex].dLookPos,
+                            playableClasses[plrs[playerIndex].choice].GetUniqueCardsInDeck());
+                    }
+                    else if (p.position == MODE.READYUP)
+                    {
+                        SetPlayerReady(playerIndex, true);
+                    }
+                    last_select = Time.time;
+                }
+            }
+            else
+            {
+                if (Cin.CheckKey("XBoxBack", p.ps, Cin.greaterThan))
+                {
+                    SetPlayerReady(playerIndex, false);
+                }
             }
         }
+    }
+
+    void SetPlayerReady(int playerIndex, bool ready)
+    {
+        PlayerController p = plrs[playerIndex];
+        p.ready = ready;
+
+        GameObject player = GameObject.Find($"PSelect{p.ps}").gameObject;
+        GameObject sb = player.transform.Find("SelectButton").gameObject;
+        sb.GetComponent<TextMesh>().text = ready ? "Ready": "Select";
     }
 
     void HandleDeckView(int playerIndex)
@@ -250,7 +363,7 @@ public class PlayerSelectController : MonoBehaviour
 
     void SetDeckViewChoice(int playerIndex, int newLook, Dictionary<string, int> cards)
     {
-        PlayerTurn p = plrs[playerIndex];
+        PlayerController p = plrs[playerIndex];
         GameObject player = GameObject.Find($"PSelect{p.ps}").gameObject;
         GameObject deckView = player.transform.Find("DeckView").gameObject;
 
@@ -292,7 +405,7 @@ public class PlayerSelectController : MonoBehaviour
 
     void SetDeckViewPreview(int playerIndex, CardBase card)
     {
-        PlayerTurn p = plrs[playerIndex];
+        PlayerController p = plrs[playerIndex];
         GameObject player = GameObject.Find($"PSelect{p.ps}").gameObject;
         GameObject deckView = player.transform.Find("DeckView").gameObject;
         GameObject preview = deckView.transform.Find("Preview").gameObject;

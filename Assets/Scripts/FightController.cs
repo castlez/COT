@@ -72,8 +72,8 @@ public class FightController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // check single player
-        Cin.singlePlayer = checkControllers();
+        // check single player. get this from global character select
+        //Cin.singlePlayer = Cin.checkControllers();
 
         // get global game data object
         //gameData = gameObject.AddComponent<GameData>();
@@ -102,7 +102,7 @@ public class FightController : MonoBehaviour
         }
 
         // set turn order
-        // TODO for now just all players then all enemies
+        // TODO for now just all players then all enemies, but initiative would be cool
         currentPlayer = players[0];
         currentTurn = new Tuple<string, int>(PLAYERS, 0); // access with currentTurn.Item1 and currentTurn.Item2
         Debug.Log($"Current player is {currentTurn.Item2}");
@@ -131,27 +131,6 @@ public class FightController : MonoBehaviour
             hcc.GetComponent<MeshRenderer>().enabled = false;
             hcard.GetComponent<Renderer>().enabled = false;
         }
-    }
-
-    bool checkControllers()
-    {
-        //Get Joystick Names
-        string[] temp = UnityEngine.Input.GetJoystickNames();
-
-        //Check whether array contains anything
-        if (temp.Length > 0)
-        {
-            //Iterate over every element
-            for (int i = 0; i < temp.Length; ++i)
-            {
-                //Check if the string is empty or not
-                if (!string.IsNullOrEmpty(temp[i]))
-                {
-                    return false;  // this just says if any controller is connected!!
-                }
-            }
-        }
-        return true;
     }
 
     void SetupUi()

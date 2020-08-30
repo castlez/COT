@@ -27,9 +27,9 @@ namespace Assets.Enemies
 
         public void SetTargetted(bool targetted)
         {
-            GameObject me = GameObject.Find($"Enemy{enemyNum}");
-            GameObject cvs = me.transform.Find("Canvas").gameObject;
-            GameObject targInd = cvs.transform.Find("TargetInd").gameObject;
+            GameObject cvs = GameObject.Find("Canvas").gameObject;
+            GameObject me = cvs.transform.Find($"Enemy{enemyNum}").gameObject;
+            GameObject targInd = me.transform.Find("TargetInd").gameObject;
             targInd.GetComponent<SpriteRenderer>().enabled = targetted;
         }
     }

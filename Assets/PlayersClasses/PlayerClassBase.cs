@@ -71,9 +71,9 @@ namespace Assets.PlayersClasses
         public void SetTurnIndicator(bool myTurn)
         {
             Debug.Log($"player {playerNum} setting turn ind to {myTurn}");
-            GameObject me = GameObject.Find($"Player{playerNum}");
-            GameObject cvs = me.transform.Find("Canvas").gameObject;
-            GameObject turn = cvs.transform.Find("TurnInd").gameObject;
+            GameObject cvs = GameObject.Find("Canvas").gameObject;
+            GameObject me = cvs.transform.Find($"Player{playerNum}").gameObject;
+            GameObject turn = me.transform.Find("TurnInd").gameObject;
             turn.GetComponent<SpriteRenderer>().enabled = myTurn;
         }
 
@@ -93,9 +93,9 @@ namespace Assets.PlayersClasses
         {
             statuses.Add(st);
 
-            GameObject me = GameObject.Find($"Player{playerNum}");
-            GameObject cvs = me.transform.Find("Canvas").gameObject;
-            GameObject sts = cvs.transform.Find("Statuses").gameObject;
+            GameObject cvs = GameObject.Find("Canvas").gameObject;
+            GameObject me = cvs.transform.Find($"Player{playerNum}").gameObject;
+            GameObject sts = me.transform.Find("Statuses").gameObject;
             Vector3 statusPos = sts.transform.position;
             statusPos.x = statusPos.x + STATUS_SPACING * (statuses.Count - 1f);
 
@@ -181,9 +181,9 @@ namespace Assets.PlayersClasses
 
         public void SetTargetted(bool targetted)
         {
-            GameObject me = GameObject.Find($"Player{playerNum}");
-            GameObject cvs = me.transform.Find("Canvas").gameObject;
-            GameObject targInd = cvs.transform.Find("TargetInd").gameObject;
+            GameObject cvs = GameObject.Find("Canvas").gameObject;
+            GameObject me = cvs.transform.Find($"Player{playerNum}").gameObject;
+            GameObject targInd = me.transform.Find("TargetInd").gameObject;
             targInd.GetComponent<SpriteRenderer>().enabled = targetted;
         }
 
@@ -322,9 +322,9 @@ namespace Assets.PlayersClasses
                 }
             }
             Hp -= damageTaken;
-            GameObject me = GameObject.Find($"Player{playerNum}");
-            GameObject cvs = me.transform.Find("Canvas").gameObject;
-            GameObject hpobj = cvs.transform.Find("hpbar").gameObject;
+            GameObject cvs = GameObject.Find("Canvas").gameObject;
+            GameObject me = cvs.transform.Find($"Player{playerNum}").gameObject;
+            GameObject hpobj = me.transform.Find("hpbar").gameObject;
             if (Hp > 0)
             {
                 float newlifeperc = (float)Hp / maxHp;
