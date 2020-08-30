@@ -9,19 +9,20 @@ using UnityEngine.UI;
 
 namespace Assets.PlayersClasses
 {
-    public class Barbarian : PlayerClassBase
+    public class ShadowTinker : PlayerClassBase
     {
-        public Barbarian(string pNum)
+        public ShadowTinker(string pNum)
         {
-            classDescription = "A powerful warrior, the\n" +
-                               "barbarian uses physical\n" +
-                               "damage to brutalize their\n" +
-                               "enemy, revels in the pain\n" +
-                               "that comes with combat,\n" +
-                               "and can protect allies\n" +
-                               "from physical harm.";
+            // TODO finish this class (copy of barb rn)
+            classDescription = "Robots in the shadows!\n" +
+                               "The Shadow Tinker is a\n" +
+                               "master of subterfuge and\n" +
+                               "centrifuges. Can use\n" +
+                               "stealthy approaches and \n" +
+                               "deploy robots to aid their\n" +
+                               "allies";
             playerNum = pNum;
-            maxHp = 80;
+            maxHp = 65;
             cardHandler = new BarbarianCards();
             deck = cardHandler.GetStartingDeck();
             hand = new List<CardBase>();
@@ -44,7 +45,7 @@ namespace Assets.PlayersClasses
         {
             try
             {
-                return Resources.Load<Sprite>("Images/Ironclad"); ;
+                return Resources.Load<Sprite>("Images/Silent"); ;
 
             }
             catch (Exception)

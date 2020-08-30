@@ -24,6 +24,9 @@ namespace Assets.PlayersClasses
         public float currentStatusXPos;
         public const float STATUS_SPACING = 0.4f;
 
+        // info
+        public string classDescription;
+
         // cards
         public CardHandlerBase cardHandler;
         public List<CardBase> deck;
@@ -46,9 +49,13 @@ namespace Assets.PlayersClasses
 
         public int getModdedDamage(int baseAmount, DamageTypes dType)
         {
-            int damMod = baseAmount;
             // check if any status increase damage done
             // TODO apply damage type
+            if (statuses == null)
+            {
+                return baseAmount;  // SHOULD only hit this in character select
+            }
+            int damMod = baseAmount;
             foreach (StatusBase stat in statuses)
             {
                 if (stat.effectTimes.Contains(StatusEffectTimes.ONDAMAGE))
@@ -221,6 +228,7 @@ namespace Assets.PlayersClasses
         {
             statusPrefabTemplate = stPrefTemp;
             armours = new Dictionary<DamageTypes, int>();
+            Hp = maxHp;
 
             // shuffle the deck and make curDeck a stack of shuffled cards
             List<CardBase> shuffled = deck.OrderBy(a => Guid.NewGuid()).ToList();
@@ -328,6 +336,35 @@ namespace Assets.PlayersClasses
                 me.GetComponent<SpriteRenderer>().enabled = false;
                 cvs.GetComponent<Canvas>().enabled = false;
             }
+        }
+
+        public Dictionary<string, int> GetUniqueCardsInDeck()
+        {
+            Dictionary<string, int> temp = new Dictionary<string, int>();
+            for (int i = 0; i < deck.Count;i++)
+            {
+                if (temp.ContainsKey(deck[i].name))
+                {
+                    temp[deck[i].name] += 1;
+                }
+                else
+                {
+                    temp.Add(deck[i].name, 1);
+                }
+            }
+            return temp;
+        }
+
+        public CardBase GetCardInDeckByName(string name)
+        {
+            foreach(CardBase c in deck)
+            {
+                if (c.name == name)
+                {
+                    return c;
+                }
+            }
+            return null;
         }
     }
 }

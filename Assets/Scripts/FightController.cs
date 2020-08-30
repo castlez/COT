@@ -1,6 +1,7 @@
 ﻿using Assets.Cards;
 using Assets.Enemies;
 using Assets.PlayersClasses;
+using Assets.Controls;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,9 +16,7 @@ public class FightController : MonoBehaviour
     public const string PLAYERS = "players";
     public const string ENEMIES = "enemies";
 
-    // DEBUGGING(?)
-    public const bool USE_KEYBOARD = true;  // use keyboard to control player 1
-    public bool singlePlayer;  // use keyboard to control all players, basically single player
+    // controls
 
     // positions for selected cards of current player
     private float deselectedY;
@@ -74,17 +73,32 @@ public class FightController : MonoBehaviour
     void Start()
     {
         // check single player
-        singlePlayer = checkControllers();
+        Cin.singlePlayer = checkControllers();
 
         // get global game data object
         //gameData = gameObject.AddComponent<GameData>();
 
         // init players
         // TODO get players from player select scene, for now hard coded to 2 players and 2 enemies
+        if (GameData.currentPlayers == null)
+        {
+            GameData.currentPlayers = new List<PlayerClassBase>() {
+                new Barbarian("1"),
+                new Barbarian("2")
+            };
+        }
         players = GameData.currentPlayers;
         for (int i = 0; i < players.Count; i++)
         {
             players[i].Init(statusPrefab);
+        }
+
+        // Enemies
+        GameData.getNextEnemies(0);  // 0 forest, 1 mountain, 2 castle bad guy place
+        enemies = GameData.nextEnemies;
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            enemies[i].Init();
         }
 
         // set turn order
@@ -94,15 +108,6 @@ public class FightController : MonoBehaviour
         Debug.Log($"Current player is {currentTurn.Item2}");
 
         phaseIndex = 0;
-
-        // init enemies TODO make dynamic
-        enemies = new List<EnemyBase>();
-        EnemyBase e1 = new Bandit("1");
-        enemies.Add(e1);
-        enemies[0].Init();
-        EnemyBase e2 = new Bandit("2");
-        enemies.Add(e2);
-        enemies[1].Init();
 
         SetupUi();
 
@@ -131,7 +136,7 @@ public class FightController : MonoBehaviour
     bool checkControllers()
     {
         //Get Joystick Names
-        string[] temp = Input.GetJoystickNames();
+        string[] temp = UnityEngine.Input.GetJoystickNames();
 
         //Check whether array contains anything
         if (temp.Length > 0)
@@ -170,63 +175,6 @@ public class FightController : MonoBehaviour
     void finishCombat(bool playersWin)
     {
 
-    }
-
-    public delegate bool COperator(float a, float b);
-    public COperator lessThan = delegate (float a, float b)
-    {
-        return a < b;
-    };
-    public COperator greaterThan = delegate (float a, float b)
-    {
-        return a > b;
-    };
-
-    bool CheckKey(string keyName, string pNum, COperator op)
-    {
-        float keyCheck;
-        if (USE_KEYBOARD)
-        {
-            if (pNum == "1" || singlePlayer)
-            {
-                // if the keyboard is in use, shift controllers down
-                if (keyName == "XBoxPassTurn")
-                {
-                    keyCheck = Input.GetAxisRaw("KeyPass");
-                }
-                else if( keyName == "XBoxAction")
-                {
-                    keyCheck = Input.GetAxisRaw("KeyAction");
-                }
-                else if(keyName == "XBoxHoriz")
-                {
-                    keyCheck = Input.GetAxisRaw("Horizontal");
-                }
-                else if (keyName == "XBoxBack")
-                {
-                    keyCheck = Input.GetAxisRaw("KeyBack");
-                }
-                else
-                {
-                    Debug.LogError($"CheckKey recieved unknown key '{keyName}' with keyboard enabled!");
-                    return false;
-                }
-            }
-            else
-            {
-                int num = int.Parse(pNum) - 1;
-                keyCheck = Input.GetAxisRaw($"{keyName}{num}");
-            }
-        }
-        else  // shows as unreachable if USE_KEYBOARD is true
-        {
-            keyCheck = Input.GetAxisRaw($"{keyName}{pNum}");
-        }
-        if(op(keyCheck, 0))
-        {
-            return true;
-        }
-        return false;
     }
 
     void DisableTargetIndicators()
@@ -367,7 +315,7 @@ public class FightController : MonoBehaviour
     {
         if (Time.time - last_play > playInterval)
         {
-            if (CheckKey($"XBoxPassTurn", currentPlayer.playerNum, greaterThan))
+            if (Cin.CheckKey($"XBoxPassTurn", currentPlayer.playerNum, Cin.greaterThan))
             {
                 currentPlayer.EndPhase();
                 last_play = Time.time;
@@ -385,7 +333,7 @@ public class FightController : MonoBehaviour
         }
         if (Time.time - last_play > playInterval)
         {
-            if (CheckKey("XBoxAction", currentPlayer.playerNum, greaterThan))
+            if (Cin.CheckKey("XBoxAction", currentPlayer.playerNum, Cin.greaterThan))
             {
                 CardBase toPlay = currentPlayer.hand[lookCard];
                 if(!currentPlayer.canPlayCardAtIndex(lookCard))
@@ -426,7 +374,7 @@ public class FightController : MonoBehaviour
         }
         if (Time.time - last_play > targetActionInterval)
         {
-            if (CheckKey("XBoxAction", currentPlayer.playerNum, greaterThan))
+            if (Cin.CheckKey("XBoxAction", currentPlayer.playerNum, Cin.greaterThan))
             {
                 Debug.Log($"Casting {currentPlayer.hand[lookCard].name}");
 
@@ -461,13 +409,13 @@ public class FightController : MonoBehaviour
         // card select
         if (Time.time - last_select > moveInterval)
         {
-            if (CheckKey("XBoxHoriz", currentPlayer.playerNum, greaterThan))
+            if (Cin.CheckKey("XBoxHoriz", currentPlayer.playerNum, Cin.greaterThan))
             {
                 DisableTargetIndicators();
                 updateCardSelect(lookCard, lookCard + 1);
                 last_select = Time.time;
             }
-            else if (CheckKey("XBoxHoriz", currentPlayer.playerNum, lessThan))
+            else if (Cin.CheckKey("XBoxHoriz", currentPlayer.playerNum, Cin.lessThan))
             {
                 DisableTargetIndicators();
                 updateCardSelect(lookCard, lookCard - 1);
@@ -480,7 +428,7 @@ public class FightController : MonoBehaviour
     {
         if (Time.time - last_select > targetInterval)
         {
-            if (CheckKey("XBoxHoriz", currentPlayer.playerNum, lessThan))
+            if (Cin.CheckKey("XBoxHoriz", currentPlayer.playerNum, Cin.lessThan))
             {
                 string currentTargetType = currentTarget.Item1;
                 int currentTargetIndex = currentTarget.Item2;
@@ -500,7 +448,7 @@ public class FightController : MonoBehaviour
                     Debug.Log($"current target: {currentTarget.Item1}, {currentTarget.Item2}");
                 }
             }
-            if (CheckKey("XBoxHoriz", currentPlayer.playerNum, greaterThan))
+            if (Cin.CheckKey("XBoxHoriz", currentPlayer.playerNum, Cin.greaterThan))
             {
                 string currentTargetType = currentTarget.Item1;
                 int currentTargetIndex = currentTarget.Item2;
@@ -524,7 +472,7 @@ public class FightController : MonoBehaviour
                     Debug.Log($"current target: {currentTarget.Item1}, {currentTarget.Item2}");
                 }
             }
-            if (CheckKey("XBoxBack", currentPlayer.playerNum, greaterThan))
+            if (Cin.CheckKey("XBoxBack", currentPlayer.playerNum, Cin.greaterThan))
             {
                 int currentTargetIndex = currentTarget.Item2;
                 enemies[currentTargetIndex].SetTargetted(false);
