@@ -8,13 +8,16 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 
 public class FightController : MonoBehaviour
 {
     // Local Constants
     public const string PLAYERS = "players";
     public const string ENEMIES = "enemies";
+    public const int MAXENEMIES = 4;
+    public const int MAXPLAYERS = 4;
+
 
     // controls
 
@@ -79,12 +82,12 @@ public class FightController : MonoBehaviour
         //gameData = gameObject.AddComponent<GameData>();
 
         // init players
-        // TODO get players from player select scene, for now hard coded to 2 players and 2 enemies
         if (GameData.currentPlayers == null)
         {
+            // DEBUG hard code players
             GameData.currentPlayers = new List<PlayerClassBase>() {
-                new Barbarian("1"),
-                new Barbarian("2")
+                //new ShadowTinker("1"),
+                new Barbarian("1")
             };
         }
         players = GameData.currentPlayers;
@@ -94,8 +97,7 @@ public class FightController : MonoBehaviour
         }
 
         // Enemies
-        GameData.getNextEnemies(0);  // 0 forest, 1 mountain, 2 castle bad guy place
-        enemies = GameData.nextEnemies;
+        enemies = GameData.getNextEnemies(0);  // 0 forest, 1 mountain, 2 castle bad guy place
         for (int i = 0; i < enemies.Count; i++)
         {
             enemies[i].Init();
@@ -135,16 +137,42 @@ public class FightController : MonoBehaviour
 
     void SetupUi()
     {
+        // grab canvas
+        GameObject cvs = GameObject.Find("Canvas").gameObject;
+        GameObject ui = GameObject.Find("UI").gameObject;
+
+        // TEMP set floor counter
+        GameObject floorCounter = ui.transform.Find("FloorCounter").gameObject;
+        GameObject fnum = floorCounter.transform.Find("Fnum").gameObject;
+        fnum.GetComponent<TextMesh>().text = GameData.floorNumber.ToString();
+
         // Turn off all indicators
-        for (int i = 0; i < players.Count; i++)
+        // and hide unused characters
+        for (int i = 0; i < MAXPLAYERS; i++)
         {
-            players[i].SetTurnIndicator(false);
-            players[i].SetTargetted(false);
+            if (i < players.Count)
+            {
+                players[i].SetTurnIndicator(false);
+                players[i].SetTargetted(false);
+            }
+            else
+            {
+                GameObject me = cvs.transform.Find($"Player{i+1}").gameObject;
+                me.SetActive(false);
+            }
+            
         }
-        for (int i = 0; i < enemies.Count; i++)
+        for (int i = 0; i < MAXENEMIES; i++)
         {
-            //enemies[i].SetTurnIndicator(false);
-            enemies[i].SetTargetted(false);
+            if (i < enemies.Count)
+            {
+                enemies[i].SetTargetted(false);
+            }
+            else
+            {
+                GameObject me = cvs.transform.Find($"Enemy{i + 1}").gameObject;
+                me.SetActive(false);
+            }
         }
 
         targetMode = false;
@@ -153,7 +181,17 @@ public class FightController : MonoBehaviour
 
     void finishCombat(bool playersWin)
     {
-
+        if (!playersWin)
+        {
+            // noop for now i guess? this is where the players died
+        }
+        else
+        {
+            // TODO for now just go to another combat after incrementing the floor
+            // TODO combat rewards
+            GameData.floorNumber += 1;
+            SceneManager.LoadScene(1);
+        }
     }
 
     void DisableTargetIndicators()
@@ -190,7 +228,7 @@ public class FightController : MonoBehaviour
                 }
             }
         }
-        if (currentTurn.Item1 == "enemies")
+        if (currentTurn.Item1 == ENEMIES)
         {
             var passTurn = HandleEnemyTurn();
             if (passTurn)
@@ -214,8 +252,16 @@ public class FightController : MonoBehaviour
     {
         // players
         players = players.Where(p => p.Hp > 0).ToList();
+        if (players.Count == 0)
+        {
+            finishCombat(false);
+        }
         // enemies
         enemies = enemies.Where(e => e.Hp > 0).ToList();
+        if (enemies.Count == 0)
+        {
+            finishCombat(true);
+        }
     }
 
     bool HandleEnemyTurn()
@@ -462,21 +508,7 @@ public class FightController : MonoBehaviour
 
     GameObject getCardInHand(int number)
     {
-        switch (number)
-        {
-            case 0:
-                return hand1;
-            case 1:
-                return hand2;
-            case 2:
-                return hand3;
-            case 3:
-                return hand4;
-            case 4:
-                return hand5;            
-            default:
-                return null;
-        }
+        return GameObject.Find($"Hand{number + 1}").gameObject;
     }
 
     void UpdateHand()
@@ -557,5 +589,14 @@ public class FightController : MonoBehaviour
             lookCard = newCardIndex;
             last_select = Time.time;
         }
+    }
+
+    public static GameObject AddStatus(GameObject statusPrefabTemplate, Vector3 statusPos, Quaternion rotation)
+    {
+        return Instantiate(statusPrefabTemplate, statusPos, Quaternion.identity);
+    }
+    public static void DestroyStatus(GameObject status)
+    {
+        Destroy(status);
     }
 }

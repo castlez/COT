@@ -27,22 +27,9 @@ namespace Assets.Cards
 
         public cardDel cardText;
 
-
         public CardBase()
         {
             //cardText = cardText.Replace("{}", baseDamage.ToString());
         }
-
-        //public static int RollDamage(int numDice, int diceType, int modifier)
-        //{
-        //    System.Random rnd = new System.Random();
-        //    int total = 0;
-        //    for (int i = 0; i < numDice; i++)
-        //    {
-        //        total += rnd.Next(1, diceType + 1);
-        //    }
-        //    total += modifier;
-        //    return total;
-        //}
     }
 }

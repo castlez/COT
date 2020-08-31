@@ -20,6 +20,9 @@ namespace Assets.PlayersClasses.Statuses
         // cant be static in this version of C# but its static so implement it as static?
         public string description;
 
+        // duration
+        public int duration = -1;  // default is until removed
+
         // Apply the affect by checking phase
         public abstract int apply(object target, StatusEffectTimes sType);
 

@@ -26,6 +26,7 @@ namespace Assets.PlayersClasses
 
         // info
         public string classDescription;
+        public bool spawned = false;
 
         // cards
         public CardHandlerBase cardHandler;
@@ -99,10 +100,10 @@ namespace Assets.PlayersClasses
             Vector3 statusPos = sts.transform.position;
             statusPos.x = statusPos.x + STATUS_SPACING * (statuses.Count - 1f);
 
-            //GameObject newStat = Instantiate(statusPrefabTemplate, statusPos, Quaternion.identity);
-            //newStat.GetComponent<SpriteRenderer>().sprite = statuses[statuses.Count - 1].GetSprite();
+            GameObject newStat = FightController.AddStatus(statusPrefabTemplate, statusPos, Quaternion.identity);
+            newStat.GetComponent<SpriteRenderer>().sprite = statuses[statuses.Count - 1].GetSprite();
 
-            //statusPrefabs.Add(newStat);
+            statusPrefabs.Add(newStat);
         }
 
         public void RemoveStatus(Func<StatusBase, bool> check)
@@ -115,14 +116,25 @@ namespace Assets.PlayersClasses
             {
                 if (check(statuses[i]))
                 {
-                    statuses.RemoveAt(i);
                     GameObject sp = statusPrefabs[i];
+                    statuses.RemoveAt(i);
                     statusPrefabs.RemoveAt(i);
-                    //Destroy(sp);
-
+                    FightController.DestroyStatus(sp);
                     return;
                 }
             }
+        }
+
+        public bool CheckStatus(string name)
+        {
+            foreach (StatusBase status in statuses)
+            {
+                if (status.name == name)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
         public void StartTurn()
         {
@@ -228,15 +240,18 @@ namespace Assets.PlayersClasses
         {
             statusPrefabTemplate = stPrefTemp;
             armours = new Dictionary<DamageTypes, int>();
-            Hp = maxHp;
-
+            if (!spawned)
+            {
+                Hp = maxHp;
+                spawned = true;
+            }
+            SetHealthMeter((float)Hp/maxHp);
             // shuffle the deck and make curDeck a stack of shuffled cards
+            // also init grave and hand
             List<CardBase> shuffled = deck.OrderBy(a => Guid.NewGuid()).ToList();
-            //System.Random rnd = new System.Random();
-            //shuffled = shuffled.Select(x => new { value = x, order = rnd.Next() })
-            //                   .OrderBy(x => x.order).Select(x => x.value).ToList();
             curDeck = new Stack<CardBase>(shuffled);
             grave = new List<CardBase>();
+            hand = new List<CardBase>();
 
             // Get Sprite
             GameObject pObj = GameObject.Find("Player" + playerNum);
@@ -328,14 +343,21 @@ namespace Assets.PlayersClasses
             if (Hp > 0)
             {
                 float newlifeperc = (float)Hp / maxHp;
-                hpobj.GetComponent<Image>().fillAmount = newlifeperc;
+                SetHealthMeter(newlifeperc);
             }
             else
             {
                 // DIE
                 me.GetComponent<SpriteRenderer>().enabled = false;
-                cvs.GetComponent<Canvas>().enabled = false;
             }
+        }
+
+        public void SetHealthMeter(float amount)
+        {
+            GameObject cvs = GameObject.Find("Canvas").gameObject;
+            GameObject me = cvs.transform.Find($"Player{playerNum}").gameObject;
+            GameObject hpobj = me.transform.Find("hpbar").gameObject;
+            hpobj.GetComponent<Image>().fillAmount = amount;
         }
 
         public Dictionary<string, int> GetUniqueCardsInDeck()

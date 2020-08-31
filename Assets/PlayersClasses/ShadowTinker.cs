@@ -11,7 +11,7 @@ namespace Assets.PlayersClasses
 {
     public class ShadowTinker : PlayerClassBase
     {
-        public ShadowTinker(string pNum)
+        public ShadowTinker(string pNum) : base()
         {
             // TODO finish this class (copy of barb rn)
             classDescription = "Robots in the shadows!\n" +
@@ -23,7 +23,7 @@ namespace Assets.PlayersClasses
                                "allies";
             playerNum = pNum;
             maxHp = 65;
-            cardHandler = new BarbarianCards();
+            cardHandler = new ShadowTinkerCards();
             deck = cardHandler.GetStartingDeck();
             hand = new List<CardBase>();
 

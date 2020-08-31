@@ -35,10 +35,8 @@ namespace Assets.Cards
                 action = delegate (object targetObj, PlayerClassBase caster)
                 {
                     EnemyBase target = (EnemyBase)targetObj;
-                    Barbarian me = (Barbarian)caster;
 
-                    int damMod = me.getModdedDamage(this.GetCard("Axe Swing").baseDamage, DamageTypes.PHYSICAL);
-                    int meDmg = (int)Mathf.Floor(damMod / 4);
+                    int damMod = caster.getModdedDamage(this.GetCard("Axe Swing").baseDamage, DamageTypes.PHYSICAL);
                     target.TakeDamage(damMod, DamageTypes.PHYSICAL);
                     Debug.Log($"axe swing hit for {damMod}");
                 }
@@ -94,12 +92,11 @@ namespace Assets.Cards
                 action = delegate (object targetObj, PlayerClassBase caster)
                 {
                     EnemyBase target = (EnemyBase)targetObj;
-                    Barbarian me = (Barbarian)caster;
 
-                    int damMod = me.getModdedDamage(this.GetCard("Wild Swing").baseDamage, DamageTypes.PHYSICAL);
+                    int damMod = caster.getModdedDamage(this.GetCard("Wild Swing").baseDamage, DamageTypes.PHYSICAL);
                     int meDmg = (int)Mathf.Floor(damMod / 4);
                     target.TakeDamage(damMod, DamageTypes.PHYSICAL);
-                    me.TakeDamage(meDmg, DamageTypes.PHYSICAL);
+                    caster.TakeDamage(meDmg, DamageTypes.PHYSICAL);
                     Debug.Log($"wild swing hits for {damMod} and caster takes {meDmg}");
                 }
             });
@@ -120,9 +117,8 @@ namespace Assets.Cards
                 action = delegate (object targetObj, PlayerClassBase caster)
                 {
                     EnemyBase target = (EnemyBase)targetObj;
-                    Barbarian me = (Barbarian)caster;
 
-                    int damMod = me.getModdedDamage(this.GetCard(cardName).baseDamage, DamageTypes.PHYSICAL);
+                    int damMod = caster.getModdedDamage(this.GetCard(cardName).baseDamage, DamageTypes.PHYSICAL);
                     target.TakeDamage(damMod, DamageTypes.PHYSICAL);
                     Debug.Log($"wild swing hits for {damMod}");
 

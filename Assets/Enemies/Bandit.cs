@@ -21,7 +21,7 @@ namespace Assets.Enemies
         }
         public override void Init()
         {
-            maxHp = 50;
+            maxHp = 40 + 5*GameData.floorNumber;
             Hp = maxHp;
         }
 
@@ -45,9 +45,9 @@ namespace Assets.Enemies
         public override void TakeDamage(int amount, DamageTypes dType)
         {
             Hp -= amount;
-            GameObject me = GameObject.Find($"Enemy{enemyNum}");
-            GameObject cvs = me.transform.Find("Canvas").gameObject;
-            GameObject hpobj = cvs.transform.Find("hpbar").gameObject;
+            GameObject cvs = GameObject.Find("Canvas").gameObject;
+            GameObject me = cvs.transform.Find($"Enemy{enemyNum}").gameObject;
+            GameObject hpobj = me.transform.Find("hpbar").gameObject;
             if (Hp > 0)
             {
                 float newlifeperc = (float)Hp / maxHp;
@@ -57,7 +57,6 @@ namespace Assets.Enemies
             {
                 // DIE
                 me.GetComponent<SpriteRenderer>().enabled = false;
-                cvs.GetComponent<Canvas>().enabled = false;
             }
         }
 
