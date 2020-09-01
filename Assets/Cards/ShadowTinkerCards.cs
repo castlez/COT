@@ -21,13 +21,13 @@ namespace Assets.Cards
 
             // Common
             cardName = "Stab";
-            cardPool.Add(cardName, new CardBase()
+            cardPool.Add("Stab", new CardBase()
             {
                 name = cardName,
                 cost = 1,
                 cardText = delegate (PlayerClassBase caster)
                 {
-                    int damMod = caster.getModdedDamage(this.GetCard(cardName).baseDamage, DamageTypes.PHYSICAL);
+                    int damMod = caster.getModdedDamage(this.GetCard("Stab").baseDamage, StatusEffectTimes.ONDAMAGE);
                     return $"Deals {damMod} piercing damage";
                 },
                 cardType = CardTypes.ATTACK,
@@ -37,7 +37,7 @@ namespace Assets.Cards
                 {
                     EnemyBase target = (EnemyBase)targetObj;
 
-                    int damMod = caster.getModdedDamage(this.GetCard(cardName).baseDamage, DamageTypes.PHYSICAL);
+                    int damMod = caster.getModdedDamage(this.GetCard("Stab").baseDamage, StatusEffectTimes.ONDAMAGE);
                     target.TakeDamage(damMod, DamageTypes.PHYSICAL);
                     Debug.Log($"Stab hit for {damMod}");
                 }

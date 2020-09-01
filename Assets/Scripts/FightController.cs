@@ -18,6 +18,8 @@ public class FightController : MonoBehaviour
     public const int MAXENEMIES = 4;
     public const int MAXPLAYERS = 4;
 
+    // DEBUG
+    public int overrideNumPlayers=-1;
 
     // controls
 
@@ -72,24 +74,20 @@ public class FightController : MonoBehaviour
     // global game data
     //public static GameData gameData;
 
+    private void Awake()
+    {
+        if (overrideNumPlayers > 0)
+        {
+            GameData.currentPlayers = new List<PlayerClassBase>()
+            {
+                GameData.currentPlayers[0]
+            };
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        // check single player. get this from global character select
-        //Cin.singlePlayer = Cin.checkControllers();
-
-        // get global game data object
-        //gameData = gameObject.AddComponent<GameData>();
-
-        // init players
-        if (GameData.currentPlayers == null)
-        {
-            // DEBUG hard code players
-            GameData.currentPlayers = new List<PlayerClassBase>() {
-                //new ShadowTinker("1"),
-                new Barbarian("1")
-            };
-        }
         players = GameData.currentPlayers;
         for (int i = 0; i < players.Count; i++)
         {
@@ -107,7 +105,6 @@ public class FightController : MonoBehaviour
         // TODO for now just all players then all enemies, but initiative would be cool
         currentPlayer = players[0];
         currentTurn = new Tuple<string, int>(PLAYERS, 0); // access with currentTurn.Item1 and currentTurn.Item2
-        Debug.Log($"Current player is {currentTurn.Item2}");
 
         phaseIndex = 0;
 
@@ -122,7 +119,7 @@ public class FightController : MonoBehaviour
         for (int i = 0; i < Meta.MAX_HAND_SIZE; i++)
         {
             // find the card, set it inactive
-            GameObject hcard = GameObject.Find($"Hand{i + 1}");
+            GameObject hcard = GameObject.Find($"THand{i + 1}");
             GameObject hcd = hcard.transform.Find("CardDesc").gameObject;
             hcd.GetComponent<MeshRenderer>().enabled = false; 
 
@@ -508,7 +505,7 @@ public class FightController : MonoBehaviour
 
     GameObject getCardInHand(int number)
     {
-        return GameObject.Find($"Hand{number + 1}").gameObject;
+        return GameObject.Find($"THand{number + 1}").gameObject;
     }
 
     void UpdateHand()
@@ -516,7 +513,7 @@ public class FightController : MonoBehaviour
         for (int i = 0; i < Meta.MAX_HAND_SIZE; i++)  
         {
             // find the card, set it inactive
-            GameObject hcard = GameObject.Find($"Hand{i + 1}");
+            GameObject hcard = GameObject.Find($"THand{i + 1}");
             GameObject hcd = hcard.transform.Find("CardDesc").gameObject;
             hcd.GetComponent<MeshRenderer>().enabled = false;  //TODO this needs to be current player not first player
 
@@ -534,7 +531,7 @@ public class FightController : MonoBehaviour
         {
             try
             {
-                GameObject hcard = GameObject.Find($"Hand{i + 1}");
+                GameObject hcard = GameObject.Find($"THand{i + 1}");
 
                 GameObject hcd = hcard.transform.Find("CardDesc").gameObject;
                 hcd.GetComponent<MeshRenderer>().enabled = true;
@@ -589,14 +586,5 @@ public class FightController : MonoBehaviour
             lookCard = newCardIndex;
             last_select = Time.time;
         }
-    }
-
-    public static GameObject AddStatus(GameObject statusPrefabTemplate, Vector3 statusPos, Quaternion rotation)
-    {
-        return Instantiate(statusPrefabTemplate, statusPos, Quaternion.identity);
-    }
-    public static void DestroyStatus(GameObject status)
-    {
-        Destroy(status);
     }
 }

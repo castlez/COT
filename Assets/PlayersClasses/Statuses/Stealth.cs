@@ -21,9 +21,8 @@ namespace Assets.PlayersClasses.Statuses
         {
             if (sType == StatusEffectTimes.ONDAMAGE)
             {
-                float t = float.Parse(target.ToString() + ".0");  // HAXXXXXX
-                int dmgMod = (int)Math.Ceiling(t * 5);
-                return dmgMod;
+                int baseDamage = (int)target;
+                return baseDamage * 5;
             }
             if (sType == StatusEffectTimes.ONTAKEDAMAGE)
             {

@@ -26,7 +26,7 @@ namespace Assets.Cards
                 cost = 1,
                 cardText = delegate (PlayerClassBase caster)
                 {
-                    int damMod = caster.getModdedDamage(this.GetCard("Axe Swing").baseDamage, DamageTypes.PHYSICAL);
+                    int damMod = caster.getModdedDamage(this.GetCard("Axe Swing").baseDamage, StatusEffectTimes.ONDAMAGE);
                     return $"Deals {damMod} slashing damage";
                 },
                 cardType = CardTypes.ATTACK,
@@ -36,7 +36,7 @@ namespace Assets.Cards
                 {
                     EnemyBase target = (EnemyBase)targetObj;
 
-                    int damMod = caster.getModdedDamage(this.GetCard("Axe Swing").baseDamage, DamageTypes.PHYSICAL);
+                    int damMod = caster.getModdedDamage(this.GetCard("Axe Swing").baseDamage, StatusEffectTimes.ONDAMAGE);
                     target.TakeDamage(damMod, DamageTypes.PHYSICAL);
                     Debug.Log($"axe swing hit for {damMod}");
                 }
@@ -82,7 +82,7 @@ namespace Assets.Cards
                 cost = 2,
                 cardText = delegate (PlayerClassBase caster)
                 {
-                    int damMod = caster.getModdedDamage(this.GetCard("Wild Swing").baseDamage, DamageTypes.PHYSICAL);
+                    int damMod = caster.getModdedDamage(this.GetCard("Wild Swing").baseDamage, StatusEffectTimes.ONDAMAGE);
                     return $"Deals {damMod} slashing damage. \nTake a quarter as" +
                            " much physical \ndamage rounded down.";
                 },
@@ -93,7 +93,7 @@ namespace Assets.Cards
                 {
                     EnemyBase target = (EnemyBase)targetObj;
 
-                    int damMod = caster.getModdedDamage(this.GetCard("Wild Swing").baseDamage, DamageTypes.PHYSICAL);
+                    int damMod = caster.getModdedDamage(this.GetCard("Wild Swing").baseDamage, StatusEffectTimes.ONDAMAGE);
                     int meDmg = (int)Mathf.Floor(damMod / 4);
                     target.TakeDamage(damMod, DamageTypes.PHYSICAL);
                     caster.TakeDamage(meDmg, DamageTypes.PHYSICAL);
@@ -108,7 +108,7 @@ namespace Assets.Cards
                 cost = 2,
                 cardText = delegate (PlayerClassBase caster)
                 {
-                    int damMod = caster.getModdedDamage(this.GetCard(cardName).baseDamage, DamageTypes.PHYSICAL);
+                    int damMod = caster.getModdedDamage(this.GetCard(cardName).baseDamage, StatusEffectTimes.ONDAMAGE);
                     return $"Deals {damMod} crushing damage.";
                 },
                 cardType = CardTypes.ATTACK,
@@ -118,7 +118,7 @@ namespace Assets.Cards
                 {
                     EnemyBase target = (EnemyBase)targetObj;
 
-                    int damMod = caster.getModdedDamage(this.GetCard(cardName).baseDamage, DamageTypes.PHYSICAL);
+                    int damMod = caster.getModdedDamage(this.GetCard(cardName).baseDamage, StatusEffectTimes.ONDAMAGE);
                     target.TakeDamage(damMod, DamageTypes.PHYSICAL);
                     Debug.Log($"wild swing hits for {damMod}");
 
