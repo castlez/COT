@@ -9,5 +9,6 @@ namespace Assets.Cards
     public interface CardHandlerBase
     {
         List<CardBase> GetStartingDeck();
+        List<CardBase> GetRewardPool(int floor);
     }
 }

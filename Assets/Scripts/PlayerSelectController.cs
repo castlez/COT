@@ -13,7 +13,7 @@ public class PlayerController
     public bool lookingAtDeck; // technically boolean
     public int dLookPos;  // which card in the deck preview they are looking at
     public int playerIndex;  // index in the player lists
-    public string ps;  // player string, used to find game objects
+    public string ctrl;  // player string, used to find game objects
     public bool ready;  // whether the player has selected their character
 }
 
@@ -60,9 +60,9 @@ public class PlayerSelectController : MonoBehaviour
         switch(name)
         {
             case "Barbarian":
-                return new Barbarian($"{pi+1}");
+                return new Barbarian(plrs[pi].ctrl);
             case "ShadowTinker":
-                return new ShadowTinker($"{pi+1}");
+                return new ShadowTinker(plrs[pi].ctrl);
             default:
                 return null;
         }
@@ -170,25 +170,38 @@ public class PlayerSelectController : MonoBehaviour
                 if (i >= plrs.Count)
                 {
                     num = $"{i + 1}";
+                    
                     if (Cin.CheckKey("XBoxAction", num, Cin.greaterThan))
                     {
-                        plrs.Add(new PlayerController()
+                        int pind = plrs.Count;
+                        bool already = false;
+                        for (int jz = 0; jz < plrs.Count; jz++)
                         {
-                            choice = 0,
-                            position = 0,
-                            lookingAtDeck = false,
-                            dLookPos = 0,
-                            playerIndex = i,
-                            ps = $"{i + 1}"
-                        });
+                            if (plrs[jz].ctrl == num)
+                            {
+                                already = true;
+                            }
+                        }
+                        if (!already)
+                        {
+                            plrs.Add(new PlayerController()
+                            {
+                                choice = 0,
+                                position = 0,
+                                lookingAtDeck = false,
+                                dLookPos = 0,
+                                playerIndex = pind,
+                                ctrl = num
+                            });
 
-                        // show the selector
-                        GameObject cvs = GameObject.Find("Canvas").gameObject;
-                        GameObject player = cvs.transform.Find($"PSelect{num}").gameObject;
-                        player.SetActive(true);
-                        SetPlayerClassChoice(i, 0, MODE.READYUP);
+                            // show the selector
+                            GameObject cvs = GameObject.Find("Canvas").gameObject;
+                            GameObject player = cvs.transform.Find($"PSelect{pind + 1}").gameObject;
+                            player.SetActive(true);
+                            SetPlayerClassChoice(pind, 0, MODE.READYUP);
 
-                        last_select = Time.time;
+                            last_select = Time.time;
+                        }
                     }
                 }
             }
@@ -212,7 +225,7 @@ public class PlayerSelectController : MonoBehaviour
         plrs[playerIndex].choice = classIndex;
         plrs[playerIndex].position = interactIndex;
         PlayerClassBase classChoice = playableClasses[plrs[playerIndex].choice];
-        GameObject player = GameObject.Find($"PSelect{plrs[playerIndex].ps}").gameObject;
+        GameObject player = GameObject.Find($"PSelect{playerIndex+1}").gameObject;
         GameObject className = player.transform.Find("ClassName").gameObject;
         GameObject sprite = player.transform.Find("ClassSprite").gameObject;
         GameObject desc = player.transform.Find("ClassDescription").gameObject;
@@ -252,8 +265,8 @@ public class PlayerSelectController : MonoBehaviour
     {
         if (!plrs[playerIndex].ready)
         {
-            string pi = $"{playerIndex + 1}";
-            if (Cin.CheckKey("XBoxHoriz", $"{playerIndex+1}", Cin.greaterThan))
+            string pi = plrs[playerIndex].ctrl;
+            if (Cin.CheckKey("XBoxHoriz", pi, Cin.greaterThan))
             {
                 if (plrs[playerIndex].choice + 1 < playableClasses.Count)
                 {
@@ -295,10 +308,10 @@ public class PlayerSelectController : MonoBehaviour
             PlayerController p = plrs[playerIndex];
             if (!p.ready)
             {
-                if (Cin.CheckKey("XBoxAction", p.ps, Cin.greaterThan))
+                if (Cin.CheckKey("XBoxAction", p.ctrl, Cin.greaterThan))
                 {
 
-                    GameObject player = GameObject.Find($"PSelect{p.ps}").gameObject;
+                    GameObject player = GameObject.Find($"PSelect{playerIndex + 1}").gameObject;
                     if (p.position == MODE.LOOKATDECK)
                     {
                         p.lookingAtDeck = true;
@@ -316,7 +329,7 @@ public class PlayerSelectController : MonoBehaviour
             }
             else
             {
-                if (Cin.CheckKey("XBoxBack", p.ps, Cin.greaterThan))
+                if (Cin.CheckKey("XBoxBack", p.ctrl, Cin.greaterThan))
                 {
                     SetPlayerReady(playerIndex, false);
                 }
@@ -329,14 +342,14 @@ public class PlayerSelectController : MonoBehaviour
         PlayerController p = plrs[playerIndex];
         p.ready = ready;
 
-        GameObject player = GameObject.Find($"PSelect{p.ps}").gameObject;
+        GameObject player = GameObject.Find($"PSelect{playerIndex + 1}").gameObject;
         GameObject sb = player.transform.Find("SelectButton").gameObject;
         sb.GetComponent<TextMesh>().text = ready ? "Ready": "Select";
     }
 
     void HandleDeckView(int playerIndex)
     {
-        string pi = plrs[playerIndex].ps;
+        string pi = plrs[playerIndex].ctrl;
         Dictionary<string, int> cards = playableClasses[plrs[playerIndex].choice].GetUniqueCardsInDeck();
         if (Cin.CheckKey("XBoxVert", pi, Cin.lessThan))
         {
@@ -355,7 +368,7 @@ public class PlayerSelectController : MonoBehaviour
         if (Cin.CheckKey("XBoxBack", pi, Cin.greaterThan))
         {
             plrs[playerIndex].lookingAtDeck = false;
-            GameObject player = GameObject.Find($"PSelect{plrs[playerIndex].ps}").gameObject;
+            GameObject player = GameObject.Find($"PSelect{plrs[playerIndex].playerIndex + 1}").gameObject;
             GameObject deckView = player.transform.Find("DeckView").gameObject;
             deckView.SetActive(false);
         }
@@ -364,7 +377,7 @@ public class PlayerSelectController : MonoBehaviour
     void SetDeckViewChoice(int playerIndex, int newLook, Dictionary<string, int> cards)
     {
         PlayerController p = plrs[playerIndex];
-        GameObject player = GameObject.Find($"PSelect{p.ps}").gameObject;
+        GameObject player = GameObject.Find($"PSelect{p.playerIndex + 1}").gameObject;
         GameObject deckView = player.transform.Find("DeckView").gameObject;
 
         int selected = newLook;
@@ -406,7 +419,7 @@ public class PlayerSelectController : MonoBehaviour
     void SetDeckViewPreview(int playerIndex, CardBase card)
     {
         PlayerController p = plrs[playerIndex];
-        GameObject player = GameObject.Find($"PSelect{p.ps}").gameObject;
+        GameObject player = GameObject.Find($"PSelect{p.playerIndex + 1}").gameObject;
         GameObject deckView = player.transform.Find("DeckView").gameObject;
         GameObject preview = deckView.transform.Find("Preview").gameObject;
         

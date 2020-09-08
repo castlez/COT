@@ -32,6 +32,7 @@ namespace Assets.Cards
                 cardType = CardTypes.ATTACK,
                 targetType = TargetTypes.ENEMY,
                 baseDamage = 6,
+                isReward = false,
                 action = delegate (object targetObj, PlayerClassBase caster)
                 {
                     EnemyBase target = (EnemyBase)targetObj;
@@ -51,6 +52,7 @@ namespace Assets.Cards
                 },
                 cardType = CardTypes.SKILLS,
                 targetType = TargetTypes.SELF,
+                isReward = false,
                 action = delegate (object target, PlayerClassBase caster)
                 {
                     PlayerClassBase t = (PlayerClassBase)target;
@@ -65,7 +67,10 @@ namespace Assets.Cards
                 cost = 1,
                 cardText = delegate (PlayerClassBase caster)
                 {
-                    return "Become Enraged\n(Increase physical damage by 50% and\nphysical damage taken by 25%)";
+                    return "Become Enraged\n" +
+                    "(Increase physical damage by 50% and\n" +
+                    "physical damage taken by 25%)\n" + 
+                    "Duration: Until Removed";
                 },
                 cardType = CardTypes.AURA,
                 targetType = TargetTypes.SELF,
@@ -148,6 +153,10 @@ namespace Assets.Cards
                 cardPool["Enrage"],
                 cardPool["All In"]
             };
+        }
+        public List<CardBase> GetRewardPool(int floor)
+        {
+            return cardPool.Select(k => k.Value).Where(c => c.isReward).ToList();
         }
     }
 }

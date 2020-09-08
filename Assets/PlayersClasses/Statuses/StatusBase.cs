@@ -22,6 +22,7 @@ namespace Assets.PlayersClasses.Statuses
 
         // duration
         public int duration = -1;  // default is until removed
+        public bool stackable = false;
 
         // Apply the affect by checking phase
         public abstract int apply(object target, StatusEffectTimes sType);

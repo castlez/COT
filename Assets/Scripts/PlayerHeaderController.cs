@@ -62,6 +62,25 @@ public class PlayerHeaderController : MonoBehaviour
             UpdateResources(i);
             UpdateArmour(i);
             UpdateHealth(i);
+            UpdateDeckGrave(i);
+        }
+    }
+
+    void UpdateDeckGrave(int playerNum)
+    {
+        GameObject me = GameObject.Find($"PPane{playerNum + 1}").gameObject;
+        TextMesh deckCount = me.transform.Find("DeckCounter").gameObject.transform
+            .Find("Dnum").gameObject.GetComponent<TextMesh>();
+        TextMesh graveCount = me.transform.Find("GraveCounter").gameObject.transform
+            .Find("Gnum").gameObject.GetComponent<TextMesh>(); ;
+
+        if (deckCount.text != GameData.currentPlayers[playerNum].curDeck.Count.ToString())
+        {
+            deckCount.text = GameData.currentPlayers[playerNum].curDeck.Count.ToString();
+        }
+        if (graveCount.text != GameData.currentPlayers[playerNum].grave.Count.ToString())
+        {
+            graveCount.text = GameData.currentPlayers[playerNum].grave.Count.ToString();
         }
     }
 
@@ -69,7 +88,7 @@ public class PlayerHeaderController : MonoBehaviour
     {
         PlayerClassBase p = GameData.currentPlayers[playerNum];
         GameObject cvs = GameObject.Find("Canvas").gameObject;
-        GameObject me = cvs.transform.Find($"Player{p.playerNum}").gameObject;
+        GameObject me = cvs.transform.Find($"Player{p.ctrlNum}").gameObject;
         GameObject turn = me.transform.Find("TurnInd").gameObject;
         turn.GetComponent<SpriteRenderer>().enabled = p.myTurn;
     }
@@ -90,10 +109,10 @@ public class PlayerHeaderController : MonoBehaviour
                 GameObject me = GameObject.Find($"PPane{playerNum+1}").gameObject;
                 GameObject sts = me.transform.Find("statuses").gameObject;
                 Vector3 statusPos = sts.transform.position;
-                statusPos.x = statusPos.x + STATUS_SPACING * (p.statuses.Count - 1f);
+                statusPos.x = statusPos.x + STATUS_SPACING * (float)i;
 
                 GameObject newStat = Instantiate(p.statusPrefabTemplate, statusPos, Quaternion.identity);
-                newStat.GetComponent<SpriteRenderer>().sprite = p.statuses[p.statuses.Count - 1].GetSprite();
+                newStat.GetComponent<SpriteRenderer>().sprite = p.statuses[i].GetSprite();
 
                 p.statusPrefabs.Add(newStat);
             }
@@ -103,7 +122,7 @@ public class PlayerHeaderController : MonoBehaviour
     void UpdateResources(int playerNum)
     {
         PlayerClassBase p = GameData.currentPlayers[playerNum];
-        GameObject me = GameObject.Find($"PPane{p.playerNum}").gameObject;
+        GameObject me = GameObject.Find($"PPane{p.ctrlNum}").gameObject;
         GameObject rCur = me.transform.Find("rCur").gameObject;
         GameObject rMax = me.transform.Find("rMax").gameObject;
 
@@ -115,7 +134,7 @@ public class PlayerHeaderController : MonoBehaviour
     void UpdateArmour(int playerNum)
     {
         PlayerClassBase p = GameData.currentPlayers[playerNum];
-        GameObject me = GameObject.Find($"PPane{p.playerNum}").gameObject;
+        GameObject me = GameObject.Find($"PPane{p.ctrlNum}").gameObject;
         GameObject physArm = me.transform.Find("PhysicalArmour").gameObject;
         GameObject armAmount = physArm.transform.Find("armAmount").gameObject;
 
@@ -137,7 +156,7 @@ public class PlayerHeaderController : MonoBehaviour
     void UpdateHealth(int playerNum)
     {
         PlayerClassBase p = GameData.currentPlayers[playerNum];
-        GameObject me = GameObject.Find($"PPane{p.playerNum}").gameObject;
+        GameObject me = GameObject.Find($"PPane{p.ctrlNum}").gameObject;
         GameObject hpobj = me.transform.Find("hpbar").gameObject;
         hpobj.GetComponent<Image>().fillAmount = (float)p.Hp/p.maxHp;
 

@@ -27,6 +27,12 @@ namespace Assets.Cards
 
         public cardDel cardText;
 
+        // can this card appear in card rewards
+        public bool isReward = true;
+
+        // is one time use
+        public bool isOneShot = false;
+
         public CardBase()
         {
             //cardText = cardText.Replace("{}", baseDamage.ToString());

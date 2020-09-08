@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Assets.Cards;
 using Assets.PlayersClasses.Statuses;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -43,7 +44,7 @@ namespace Assets.PlayersClasses
         public bool regensAtStartOfTurn;
            
         // players
-        public string playerNum;
+        public string ctrlNum;
 
         // general
         public abstract void Init(GameObject stprefobj);
@@ -62,9 +63,7 @@ namespace Assets.PlayersClasses
             {
                 if (stat.effectTimes.Contains(effectTime))
                 {
-                    Debug.Log($"Woulda done {damMod}...");
                     damMod = stat.apply(damMod, StatusEffectTimes.ONDAMAGE);
-                    Debug.Log($"but instead doing {damMod} due to {stat.GetType().Name}");
                 }
             }
             return damMod;
@@ -83,13 +82,26 @@ namespace Assets.PlayersClasses
             }
             else
             {
-                // i guess also handle like... statuses that expired?
+                List<int> toRemove = new List<int>();
+                for (int i = 0;i < statuses.Count;i++)
+                {
+                    if (statuses[i].duration != 0)
+                        statuses[i].duration -= 1;
+                    if (statuses[i].duration == 0)
+                    {
+                        statuses.RemoveAt(i);
+                    }
+                }
             }
         }
 
         public void AddStatus(StatusBase st)
         {
-            statuses.Add(st);
+            if ((CheckStatus(st.name) && st.stackable) ||
+                (!CheckStatus(st.name)))
+            {
+                statuses.Add(st);
+            }
         }
 
         public void RemoveStatus(Func<StatusBase, bool> check)
@@ -126,6 +138,7 @@ namespace Assets.PlayersClasses
             {
                 setResource(maxResource);
             }
+            UpdateStatuses();
         }
 
         public void DrawPhase()
@@ -156,7 +169,7 @@ namespace Assets.PlayersClasses
         public void SetTargetted(bool targetted)
         {
             GameObject cvs = GameObject.Find("Canvas").gameObject;
-            GameObject me = cvs.transform.Find($"Player{playerNum}").gameObject;
+            GameObject me = cvs.transform.Find($"Player{ctrlNum}").gameObject;
             GameObject targInd = me.transform.Find("TargetInd").gameObject;
             targInd.GetComponent<SpriteRenderer>().enabled = targetted;
         }
@@ -168,8 +181,9 @@ namespace Assets.PlayersClasses
             {
                 if (curDeck.Count == 0)
                 {
-                    List<CardBase> shuffled = deck.OrderBy(a => Guid.NewGuid()).ToList();
+                    List<CardBase> shuffled = grave.OrderBy(a => Guid.NewGuid()).ToList();
                     curDeck = new Stack<CardBase>(shuffled);
+                    grave = new List<CardBase>();
                 }
                 hand.Add(curDeck.Pop());
             }
@@ -183,7 +197,10 @@ namespace Assets.PlayersClasses
                 spendResource(toPlay.cost);
                 toPlay.action(target, this);
                 hand.RemoveAt(cardIndex);
-                grave.Add(toPlay);
+                if (!toPlay.isOneShot)  // exhaust
+                {
+                    grave.Add(toPlay);
+                }
                 return true;
             }
             return false;
@@ -217,7 +234,7 @@ namespace Assets.PlayersClasses
             statuses = new List<StatusBase>();
 
             // Get Sprite
-            GameObject pObj = GameObject.Find("Player" + playerNum);
+            GameObject pObj = GameObject.Find("Player" + ctrlNum);
             pObj.GetComponent<SpriteRenderer>().sprite = GetSprite();
         }
 
@@ -252,9 +269,7 @@ namespace Assets.PlayersClasses
             {
                 if (stat.effectTimes.Contains(StatusEffectTimes.ONTAKEDAMAGE))
                 {
-                    Debug.Log($"Woulda taken {damageTaken}...");
                     damageTaken = stat.apply(damageTaken, StatusEffectTimes.ONTAKEDAMAGE);
-                    Debug.Log($"but instead taking {damageTaken} due to {stat.GetType().Name}");
                 }
             }
             if (armours.ContainsKey(dType))

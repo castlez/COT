@@ -21,7 +21,7 @@ namespace Assets.PlayersClasses
                                "stealthy approaches and \n" +
                                "deploy robots to aid their\n" +
                                "allies";
-            playerNum = pNum;
+            ctrlNum = pNum;
             maxHp = 65;
             cardHandler = new ShadowTinkerCards();
             deck = cardHandler.GetStartingDeck();

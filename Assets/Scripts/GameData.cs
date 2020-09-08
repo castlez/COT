@@ -15,8 +15,13 @@ public static class GameData
 
     public static List<PlayerClassBase> currentPlayers = new List<PlayerClassBase>() {
                 new ShadowTinker("1"),
-                //new Barbarian("2"),
+                new Barbarian("2"),
+                new ShadowTinker("3"),
+                new Barbarian("4"),
             };
+
+    public static bool paused = false;
+    public static string pausedPlayer;
     public static List<EnemyBase> nextEnemies;
     public static int floorNumber=1;  // gathered from various places to determine progress (like bandits)
     public static List<EnemyBase> getNextEnemies(int zone)

@@ -11,7 +11,7 @@ namespace Assets.PlayersClasses
 {
     public class Barbarian : PlayerClassBase
     {
-        public Barbarian(string pNum)
+        public Barbarian(string ctrl)
         {
             classDescription = "A powerful warrior, the\n" +
                                "barbarian uses physical\n" +
@@ -20,7 +20,7 @@ namespace Assets.PlayersClasses
                                "that comes with combat,\n" +
                                "and can protect allies\n" +
                                "from physical harm.";
-            playerNum = pNum;
+            ctrlNum = ctrl;
             maxHp = 80;
             cardHandler = new BarbarianCards();
             deck = cardHandler.GetStartingDeck();

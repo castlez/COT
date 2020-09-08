@@ -78,10 +78,7 @@ public class FightController : MonoBehaviour
     {
         if (overrideNumPlayers > 0)
         {
-            GameData.currentPlayers = new List<PlayerClassBase>()
-            {
-                GameData.currentPlayers[0]
-            };
+            GameData.currentPlayers = GameData.currentPlayers.GetRange(0, overrideNumPlayers);
         }
     }
 
@@ -180,14 +177,13 @@ public class FightController : MonoBehaviour
     {
         if (!playersWin)
         {
-            // noop for now i guess? this is where the players died
+            // if the players die, start over
+            SceneManager.LoadScene(0);
         }
         else
         {
-            // TODO for now just go to another combat after incrementing the floor
-            // TODO combat rewards
-            GameData.floorNumber += 1;
-            SceneManager.LoadScene(1);
+            // go to card rewards
+            SceneManager.LoadScene(3);  // TODO make this dynamic
         }
     }
 
@@ -288,28 +284,46 @@ public class FightController : MonoBehaviour
 
         // play phase
 
-        // Handle movement
-        if (targetMode)
-        {
-            HandleTargetMode();
-            HandleTargetAction();
-        }
-        else
-        {
-            HandleCardSelect();
+        // check pause
+        HandlePause();
 
-            if (HandlePassTurn())
+        if (!GameData.paused)
+        {
+            // Handle movement
+            if (targetMode)
             {
-                return true;
+                HandleTargetMode();
+                HandleTargetAction();
             }
+            else
+            {
+                HandleCardSelect();
 
-            HandleSelectAction();
+                if (HandlePassTurn())
+                {
+                    return true;
+                }
+
+                HandleSelectAction();
+            }
         }
 
         // handle action (press A or space)
 
         // if we didnt already pass turn, say we arent passing turn
         return false;
+    }
+
+    void HandlePause()
+    {
+        if (Time.time - last_play > targetActionInterval)
+        {
+            if (Cin.CheckKey("XBoxPause", currentPlayer.ctrlNum, Cin.greaterThan))
+            {
+                GameData.pausedPlayer = currentPlayer.ctrlNum;
+                GameData.paused = true;
+            }
+        }
     }
 
     void PlayCard(object target)
@@ -337,7 +351,7 @@ public class FightController : MonoBehaviour
     {
         if (Time.time - last_play > playInterval)
         {
-            if (Cin.CheckKey($"XBoxPassTurn", currentPlayer.playerNum, Cin.greaterThan))
+            if (Cin.CheckKey($"XBoxPassTurn", currentPlayer.ctrlNum, Cin.greaterThan))
             {
                 currentPlayer.EndPhase();
                 last_play = Time.time;
@@ -355,7 +369,7 @@ public class FightController : MonoBehaviour
         }
         if (Time.time - last_play > playInterval)
         {
-            if (Cin.CheckKey("XBoxAction", currentPlayer.playerNum, Cin.greaterThan))
+            if (Cin.CheckKey("XBoxAction", currentPlayer.ctrlNum, Cin.greaterThan))
             {
                 CardBase toPlay = currentPlayer.hand[lookCard];
                 if(!currentPlayer.canPlayCardAtIndex(lookCard))
@@ -396,7 +410,7 @@ public class FightController : MonoBehaviour
         }
         if (Time.time - last_play > targetActionInterval)
         {
-            if (Cin.CheckKey("XBoxAction", currentPlayer.playerNum, Cin.greaterThan))
+            if (Cin.CheckKey("XBoxAction", currentPlayer.ctrlNum, Cin.greaterThan))
             {
                 Debug.Log($"Casting {currentPlayer.hand[lookCard].name}");
 
@@ -431,13 +445,13 @@ public class FightController : MonoBehaviour
         // card select
         if (Time.time - last_select > moveInterval)
         {
-            if (Cin.CheckKey("XBoxHoriz", currentPlayer.playerNum, Cin.greaterThan))
+            if (Cin.CheckKey("XBoxHoriz", currentPlayer.ctrlNum, Cin.greaterThan))
             {
                 DisableTargetIndicators();
                 updateCardSelect(lookCard, lookCard + 1);
                 last_select = Time.time;
             }
-            else if (Cin.CheckKey("XBoxHoriz", currentPlayer.playerNum, Cin.lessThan))
+            else if (Cin.CheckKey("XBoxHoriz", currentPlayer.ctrlNum, Cin.lessThan))
             {
                 DisableTargetIndicators();
                 updateCardSelect(lookCard, lookCard - 1);
@@ -450,7 +464,7 @@ public class FightController : MonoBehaviour
     {
         if (Time.time - last_select > targetInterval)
         {
-            if (Cin.CheckKey("XBoxHoriz", currentPlayer.playerNum, Cin.lessThan))
+            if (Cin.CheckKey("XBoxHoriz", currentPlayer.ctrlNum, Cin.lessThan))
             {
                 string currentTargetType = currentTarget.Item1;
                 int currentTargetIndex = currentTarget.Item2;
@@ -470,7 +484,7 @@ public class FightController : MonoBehaviour
                     Debug.Log($"current target: {currentTarget.Item1}, {currentTarget.Item2}");
                 }
             }
-            if (Cin.CheckKey("XBoxHoriz", currentPlayer.playerNum, Cin.greaterThan))
+            if (Cin.CheckKey("XBoxHoriz", currentPlayer.ctrlNum, Cin.greaterThan))
             {
                 string currentTargetType = currentTarget.Item1;
                 int currentTargetIndex = currentTarget.Item2;
@@ -494,7 +508,7 @@ public class FightController : MonoBehaviour
                     Debug.Log($"current target: {currentTarget.Item1}, {currentTarget.Item2}");
                 }
             }
-            if (Cin.CheckKey("XBoxBack", currentPlayer.playerNum, Cin.greaterThan))
+            if (Cin.CheckKey("XBoxBack", currentPlayer.ctrlNum, Cin.greaterThan))
             {
                 int currentTargetIndex = currentTarget.Item2;
                 enemies[currentTargetIndex].SetTargetted(false);
@@ -525,8 +539,6 @@ public class FightController : MonoBehaviour
             hcard.GetComponent<Renderer>().enabled = false;
         }
 
-        int playerIndex = int.Parse(currentPlayer.playerNum) - 1;
-
         for (int i = 0; i < currentPlayer.hand.Count; i++)  
         {
             try
@@ -535,15 +547,15 @@ public class FightController : MonoBehaviour
 
                 GameObject hcd = hcard.transform.Find("CardDesc").gameObject;
                 hcd.GetComponent<MeshRenderer>().enabled = true;
-                hcd.GetComponent<TextMesh>().text = players[playerIndex].hand[i].cardText(players[playerIndex]);  //TODO this needs to be current player not first player
+                hcd.GetComponent<TextMesh>().text = currentPlayer.hand[i].cardText(currentPlayer);
 
                 GameObject hcn = hcard.transform.Find("CardName").gameObject;
                 hcn.GetComponent<MeshRenderer>().enabled = true;
-                hcn.GetComponent<TextMesh>().text = players[playerIndex].hand[i].name;
+                hcn.GetComponent<TextMesh>().text = currentPlayer.hand[i].name;
 
                 GameObject hcc = hcard.transform.Find("CardCost").gameObject;
                 hcc.GetComponent<MeshRenderer>().enabled = true;
-                hcc.GetComponent<TextMesh>().text = players[playerIndex].hand[i].cost.ToString();
+                hcc.GetComponent<TextMesh>().text = currentPlayer.hand[i].cost.ToString();
 
                 hcard.GetComponent<Renderer>().enabled = true;
             }
