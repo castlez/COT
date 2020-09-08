@@ -161,6 +161,7 @@ public class FightController : MonoBehaviour
             if (i < enemies.Count)
             {
                 enemies[i].SetTargetted(false);
+                enemies[i].SetIntent(true);
             }
             else
             {
@@ -264,7 +265,9 @@ public class FightController : MonoBehaviour
             finishCombat(true);
             return true;
         }
-        return enemies[currentTurn.Item2].TakeTurn(players, enemies);
+        bool passTurn = enemies[currentTurn.Item2].TakeTurn(players, enemies);
+        enemies[currentTurn.Item2].SetIntent(true);
+        return passTurn;
     }
 
     bool HandlePlayerTurn()

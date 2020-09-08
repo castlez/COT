@@ -32,5 +32,27 @@ namespace Assets.Enemies
             GameObject targInd = me.transform.Find("TargetInd").gameObject;
             targInd.GetComponent<SpriteRenderer>().enabled = targetted;
         }
+
+        public void SetIntent(bool hasIntent)
+        {
+            GameObject cvs = GameObject.Find("Canvas").gameObject;
+            GameObject me = cvs.transform.Find($"Enemy{enemyNum}").gameObject;
+            GameObject intent = me.transform.Find("Intent").gameObject;
+            GameObject symb = intent.transform.Find("symbol").gameObject;
+            GameObject val = intent.transform.Find("value").gameObject;
+            if (!hasIntent)
+            {
+                symb.SetActive(false);
+                val.SetActive(false);
+            }
+            else
+            {
+                symb.SetActive(true);
+                val.SetActive(true);
+                // TODO get intent from self somehow?
+                symb.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("Images/AttackIntent");
+                val.GetComponent<TextMesh>().text = "6";
+            }
+        }
     }
 }
