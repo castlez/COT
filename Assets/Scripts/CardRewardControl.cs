@@ -32,6 +32,9 @@ public class CardRewardControl : MonoBehaviour
     public float paneSpacingY;
     public float cardSpacing;
 
+    // single player handling
+    public int sCurrentPlayer = 0;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -201,45 +204,65 @@ public class CardRewardControl : MonoBehaviour
         }
         else if (choice == -1)
         {
-            for (int i = 0; i < pselects[playerNum].prefabs.Count; i++)
-            {
-                pselects[playerNum].prefabs[i].transform.Find("selected").gameObject.SetActive(false);
-            }
+            // why the fuck was this here?!
+            //for (int i = 0; i < pselects[playerNum].prefabs.Count; i++)
+            //{
+            //    pselects[playerNum].prefabs[i].transform.Find("selected").gameObject.SetActive(false);
+            //}
         }
     }
 
     void HandleCardSelect(int playerNum)
     {
+        
         if (Time.time - lastMove > moveInterval)
         {
+            if (playerNum != sCurrentPlayer)
+            {
+                return;
+            }
+            int pnum = playerNum;
+            if (Cin.singlePlayer)
+            {
+                pnum = sCurrentPlayer;
+            }
+
             if (Cin.CheckKey("XBoxHoriz", $"{playerNum + 1}", Cin.greaterThan))
             {
-                SetChosenCard(playerNum, pselects[playerNum].curChoice + 1);
+                SetChosenCard(pnum, pselects[pnum].curChoice + 1);
                 lastMove = Time.time;
             }
-            if (Cin.CheckKey("XBoxHoriz", $"{playerNum + 1}", Cin.lessThan))
+            else if (Cin.CheckKey("XBoxHoriz", $"{playerNum + 1}", Cin.lessThan))
             {
-                SetChosenCard(playerNum, pselects[playerNum].curChoice - 1);
+                SetChosenCard(pnum, pselects[pnum].curChoice - 1);
                 lastMove = Time.time;
             }
-            if (pselects[playerNum].lockedIn)
+            else if (pselects[pnum].lockedIn)
             {
                 if (Cin.CheckKey("XBoxBack", $"{playerNum+1}", Cin.greaterThan))
                 {
-                    pselects[playerNum].lockedIn = false;
+                    pselects[pnum].lockedIn = false;
+                    if (sCurrentPlayer > 0)
+                    {
+                        sCurrentPlayer -= 1;
+                    }
                 }
             }
             else
             {
                 if (Cin.CheckKey("XBoxAction", $"{playerNum + 1}", Cin.greaterThan))
                 {
-                    pselects[playerNum].lockedIn = true;
+                    pselects[pnum].lockedIn = true;
+                    sCurrentPlayer += 1;
+                    lastMove = Time.time;
                 }
                 else if (Cin.CheckKey("XBoxPassTurn", $"{playerNum + 1}", Cin.greaterThan))
                 {
-                    pselects[playerNum].curChoice = -1;
-                    SetChosenCard(playerNum, -1);
-                    pselects[playerNum].lockedIn = true;
+                    pselects[pnum].curChoice = -1;
+                    SetChosenCard(pnum, -1);
+                    pselects[pnum].lockedIn = true;
+                    sCurrentPlayer += 1;
+                    lastMove = Time.time;
                 }
             }
         }

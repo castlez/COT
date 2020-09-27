@@ -44,8 +44,8 @@ namespace Assets.PlayersClasses
         public bool regensAtStartOfTurn;
            
         // players
-        public string ctrlNum;
-
+        public string ctrlNum;  // which controller this player is using
+        public string pNum;  // which player this is
         // general
         public abstract void Init(GameObject stprefobj);
         public abstract Sprite GetSprite();
@@ -169,7 +169,7 @@ namespace Assets.PlayersClasses
         public void SetTargetted(bool targetted)
         {
             GameObject cvs = GameObject.Find("Canvas").gameObject;
-            GameObject me = cvs.transform.Find($"Player{ctrlNum}").gameObject;
+            GameObject me = cvs.transform.Find($"Player{pNum}").gameObject;
             GameObject targInd = me.transform.Find("TargetInd").gameObject;
             targInd.GetComponent<SpriteRenderer>().enabled = targetted;
         }
@@ -234,7 +234,7 @@ namespace Assets.PlayersClasses
             statuses = new List<StatusBase>();
 
             // Get Sprite
-            GameObject pObj = GameObject.Find("Player" + ctrlNum);
+            GameObject pObj = GameObject.Find("Player" + pNum);
             pObj.GetComponent<SpriteRenderer>().sprite = GetSprite();
         }
 

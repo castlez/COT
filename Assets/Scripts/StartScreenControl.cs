@@ -6,9 +6,14 @@ using UnityEngine.SceneManagement;
 
 public class StartScreenControl : MonoBehaviour
 {
+    public GameObject start;
     public GameObject startButton;
     public GameObject settingsButton;
     public GameObject exitButton;
+
+    public GameObject numSelect;
+    public GameObject singlePlayer;
+    public GameObject multiplayer;
 
     private Color selectedColor;
     private Color deselectedColor;
@@ -19,14 +24,21 @@ public class StartScreenControl : MonoBehaviour
     private float last_select;
     public float selectInterval;
 
+    public enum MODE
+    {
+        START,
+        NUMPLAYERS
+    }
+
+    private MODE _curMode;
+
     // Start is called before the first frame update
     void Start()
     {
-        selections = new List<GameObject>() {
-            startButton,
-            settingsButton,
-            exitButton
-        };
+        numSelect.SetActive(false);
+
+        _curMode = MODE.START;
+        selections = GetModeOptions();
         curChoice = 0;
 
         selectedColor = startButton.GetComponent<TextMesh>().color;
@@ -34,6 +46,29 @@ public class StartScreenControl : MonoBehaviour
         last_select = Time.time;
 
         GameObject.FindGameObjectWithTag("music").GetComponent<MusicHandler>().PlayMusic();
+    }
+
+    public List<GameObject> GetModeOptions()
+    {
+        if (_curMode == MODE.START)
+        {
+            return new List<GameObject>() {
+                startButton,
+                settingsButton,
+                exitButton
+            };
+        }
+        else if (_curMode == MODE.NUMPLAYERS)
+        {
+            return new List<GameObject>() {
+                singlePlayer,
+                multiplayer
+            };
+        }
+        else
+        {
+            throw new System.Exception($"UNKNOWN MODE {_curMode}");
+        }
     }
 
     // Update is called once per frame
@@ -52,21 +87,60 @@ public class StartScreenControl : MonoBehaviour
             {
                 if (Cin.CheckKey("XBoxAction", $"{i + 1}", Cin.greaterThan))
                 {
-                    if (curChoice == 0)
+                    if (_curMode == MODE.START)
                     {
-                        // start game
-                        Debug.Log("Starting Game!");
-                        SceneManager.LoadScene(1);
+                        if (curChoice == 0)
+                        {
+                            // start game
+                            _curMode = MODE.NUMPLAYERS;
+                            selections = GetModeOptions();
+                            start.SetActive(false);
+                            numSelect.SetActive(true);
+                            UpdateSelected(0);
+                            last_select = Time.time;
+                            return;
+                        }
+                        else if (curChoice == 1)
+                        {
+                            // settings TODO
+                        }
+                        else if (curChoice == 2)
+                        {
+                            // exit game
+                            Debug.Log("Exiting game!");
+                            Application.Quit();
+                        }
                     }
-                    else if (curChoice == 1)
+                    else if (_curMode == MODE.NUMPLAYERS)
                     {
-                        // settings TODO
+                        if (curChoice == 0)
+                        {
+                            Cin.singlePlayer = true;
+                            // start game
+                            Debug.Log("Starting Game!");
+                            SceneManager.LoadScene(1);
+                        }
+                        else if (curChoice == 1)
+                        {
+                            Cin.singlePlayer = false;
+                            // start game
+                            Debug.Log("Starting Game!");
+                            SceneManager.LoadScene(1);
+                        }
                     }
-                    else if (curChoice == 2)
+                    
+                }
+                if (Cin.CheckKey("XBoxBack", $"{i + 1}", Cin.greaterThan))
+                {
+                    if (_curMode == MODE.NUMPLAYERS)
                     {
-                        // exit game
-                        Debug.Log("Exiting game!");
-                        Application.Quit();
+                        _curMode = MODE.START;
+                        selections = GetModeOptions();
+                        start.SetActive(true);
+                        numSelect.SetActive(false);
+                        UpdateSelected(0);
+                        last_select = Time.time;
+                        return;
                     }
                 }
             }
@@ -84,9 +158,7 @@ public class StartScreenControl : MonoBehaviour
                 {
                     if (curChoice - 1 >= 0)
                     {
-                        selections[curChoice].GetComponent<TextMesh>().color = deselectedColor;
-                        curChoice -= 1;
-                        selections[curChoice].GetComponent<TextMesh>().color = selectedColor;
+                        UpdateSelected(curChoice - 1);
                         last_select = Time.time;
                     }
                 }
@@ -94,13 +166,21 @@ public class StartScreenControl : MonoBehaviour
                 {
                     if (curChoice + 1 < selections.Count)
                     {
-                        selections[curChoice].GetComponent<TextMesh>().color = deselectedColor;
-                        curChoice += 1;
-                        selections[curChoice].GetComponent<TextMesh>().color = selectedColor;
+                        UpdateSelected(curChoice + 1);
                         last_select = Time.time;
                     }
                 }
             }
         }
+    }
+
+    public void UpdateSelected(int newChoice)
+    {
+        foreach(GameObject s in selections)
+        {
+            s.GetComponent<TextMesh>().color = deselectedColor;
+        }
+        curChoice = newChoice;
+        selections[curChoice].GetComponent<TextMesh>().color = selectedColor;
     }
 }

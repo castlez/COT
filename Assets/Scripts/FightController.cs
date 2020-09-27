@@ -21,8 +21,6 @@ public class FightController : MonoBehaviour
     // DEBUG
     public int overrideNumPlayers=-1;
 
-    // controls
-
     // positions for selected cards of current player
     private float deselectedY;
     private float selectedY;
@@ -310,8 +308,6 @@ public class FightController : MonoBehaviour
                 HandleSelectAction();
             }
         }
-
-        // handle action (press A or space)
 
         // if we didnt already pass turn, say we arent passing turn
         return false;

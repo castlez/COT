@@ -38,16 +38,19 @@ public class PlayerSelectController : MonoBehaviour
     public float moveInterval;
     private float last_select;
 
-    // DEBUGGING(?)
-    public bool singlePlayer;  // use keyboard to control all players, basically single player
+    // single player
+    public int sCurrentPlayer = 0;
 
+    // button hints
+    public GameObject singleHints;
+    public GameObject multiHints;
 
     private void Awake()
     {
         // TODO check if any active controllers
         // TODO make it so one person can have multiple heroes
-        List<string> controllers = Cin.checkControllers();
-        Cin.singlePlayer = false;  // TODO this means single player always uses keyboard
+        //List<string> controllers = Cin.checkControllers();
+        //Cin.singlePlayer = false;  // TODO this means single player always uses keyboard
 
         playableClasses = new List<PlayerClassBase>() {
             new Barbarian("0"),
@@ -60,9 +63,15 @@ public class PlayerSelectController : MonoBehaviour
         switch(name)
         {
             case "Barbarian":
-                return new Barbarian(plrs[pi].ctrl);
+                return new Barbarian(plrs[pi].ctrl)
+                {
+                    pNum = $"{pi + 1}"
+                };
             case "ShadowTinker":
-                return new ShadowTinker(plrs[pi].ctrl);
+                return new ShadowTinker(plrs[pi].ctrl)
+                {
+                    pNum = $"{pi + 1}"
+                };
             default:
                 return null;
         }
@@ -71,7 +80,7 @@ public class PlayerSelectController : MonoBehaviour
     void Start()
     {
         // initialize the barbarian as first selected class
-        // for all players
+        // for all players, as well as button hints
         Init();
         
         // stand in so indexing is easier, if less than 4 players
@@ -131,6 +140,11 @@ public class PlayerSelectController : MonoBehaviour
 
     private void Init()
     {
+        // init button hints
+        singleHints.SetActive(Cin.singlePlayer);
+        multiHints.SetActive(!Cin.singlePlayer);
+
+        // Init player list
         plrs = new List<PlayerController>();
         
         // hide all deck views and selectors at first
@@ -164,25 +178,54 @@ public class PlayerSelectController : MonoBehaviour
     {
         if (Time.time - last_select > moveInterval)
         {
-            string num;
+            string ctrl;
+            string pnum;
+            bool sAddedPlayer = false;
             for (int i = 0; i < maxPlayers; i++)
             {
                 if (i >= plrs.Count)
                 {
-                    num = $"{i + 1}";
-                    
-                    if (Cin.CheckKey("XBoxAction", num, Cin.greaterThan))
+                    pnum = $"{i + 1}";
+                    if (Cin.singlePlayer)
                     {
+                        ctrl = "1";
+                    }
+                    else
+                    {
+                        // if we are playing multiplayer, the controller number 
+                        // and the pane number are the same?
+                        ctrl = pnum;
+                    }
+
+                    bool passPressed = false;
+                    if (Cin.CheckKey("XBoxPass", "1", Cin.greaterThan))
+                    {
+                        passPressed = true;
+                    }
+                    
+                    if (Cin.CheckKey("XBoxAction", ctrl, Cin.greaterThan) ||
+                        (Cin.singlePlayer && passPressed))
+                    {
+                        if (passPressed && plrs.Count == 0)
+                        {
+                            return;
+                        }
                         int pind = plrs.Count;
                         bool already = false;
                         for (int jz = 0; jz < plrs.Count; jz++)
                         {
-                            if (plrs[jz].ctrl == num)
+                            if (plrs[jz].ctrl == ctrl)
                             {
                                 already = true;
+                                break;
                             }
                         }
-                        if (!already)
+                        bool newSHero = false;
+                        if (Cin.CheckKey("XBoxPass", "1", Cin.greaterThan))
+                        {
+                            newSHero = true;
+                        }
+                        if (!already || (Cin.singlePlayer && newSHero && !sAddedPlayer))
                         {
                             plrs.Add(new PlayerController()
                             {
@@ -191,7 +234,7 @@ public class PlayerSelectController : MonoBehaviour
                                 lookingAtDeck = false,
                                 dLookPos = 0,
                                 playerIndex = pind,
-                                ctrl = num
+                                ctrl = ctrl
                             });
 
                             // show the selector
@@ -199,7 +242,11 @@ public class PlayerSelectController : MonoBehaviour
                             GameObject player = cvs.transform.Find($"PSelect{pind + 1}").gameObject;
                             player.SetActive(true);
                             SetPlayerClassChoice(pind, 0, MODE.READYUP);
-
+                            sAddedPlayer = true;  // single player
+                            if (Cin.singlePlayer && passPressed)
+                            {
+                                SetPlayerReady(pind-1, true);
+                            }
                             last_select = Time.time;
                         }
                     }

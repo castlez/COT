@@ -88,7 +88,7 @@ public class PlayerHeaderController : MonoBehaviour
     {
         PlayerClassBase p = GameData.currentPlayers[playerNum];
         GameObject cvs = GameObject.Find("Canvas").gameObject;
-        GameObject me = cvs.transform.Find($"Player{p.ctrlNum}").gameObject;
+        GameObject me = cvs.transform.Find($"Player{p.pNum}").gameObject;
         GameObject turn = me.transform.Find("TurnInd").gameObject;
         turn.GetComponent<SpriteRenderer>().enabled = p.myTurn;
     }

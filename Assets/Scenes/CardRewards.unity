@@ -807,6 +807,7 @@ MonoBehaviour:
   paneSpacingX: 7.75
   paneSpacingY: -4.54
   cardSpacing: 2.18
+  sCurrentPlayer: 0
 --- !u!1 &720382173
 GameObject:
   m_ObjectHideFlags: 0

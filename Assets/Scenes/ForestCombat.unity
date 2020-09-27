@@ -4806,7 +4806,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 712699d89137bbe4eb128ace489f6166, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  overrideNumPlayers: 1
+  overrideNumPlayers: -1
   hand1: {fileID: 1719971304}
   hand2: {fileID: 0}
   hand3: {fileID: 0}
@@ -5143,8 +5143,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 44.148}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.000104904175, y: 1.6163349}
-  m_SizeDelta: {x: 95.95, y: 100}
+  m_AnchoredPosition: {x: -0.074, y: 1.544}
+  m_SizeDelta: {x: 97.00252, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &1078312169
 SpriteRenderer:

@@ -10,8 +10,8 @@ namespace Assets.Controls
     public static class Cin
     {
         // DEBUGGING(?)
-        public static bool USE_KEYBOARD = false;  // use keyboard to control player 1
-        public static bool singlePlayer;  // use keyboard to control all players, basically single player
+        public static bool USE_KEYBOARD = true;  // use keyboard to control player 1
+        public static bool singlePlayer = true;  // use keyboard to control all players, basically single player
 
         public delegate bool COperator(float a, float b);
         public static COperator lessThan = delegate (float a, float b)
@@ -50,6 +50,14 @@ namespace Assets.Controls
                     else if (keyName == "XBoxBack")
                     {
                         keyCheck = Input.GetAxisRaw("KeyBack");
+                    }
+                    else if (keyName == "XBoxPause")
+                    {
+                        keyCheck = Input.GetAxisRaw("KeyPause");
+                    }
+                    else if (keyName == "XBoxPass")
+                    {
+                        keyCheck = Input.GetAxisRaw("KeyPass");
                     }
                     else
                     {
